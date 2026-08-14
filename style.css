@@ -128,6 +128,37 @@ h2.titre-section::before {
 .stock-bas { color: var(--miel-fonce); }
 .stock-zero { color: var(--rouge); }
 
+/* ---------- Choix du format (250 g / 500 g / 1 kg) ---------- */
+.formats {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.format {
+  flex: 1 1 auto; min-width: 62px;
+  padding: 7px 10px; border: 1.5px solid var(--bordure); border-radius: 9px;
+  background: var(--blanc); color: var(--brun); cursor: pointer;
+  font-family: inherit; font-size: .86rem; font-weight: 700; text-align: center;
+  transition: border-color .12s ease, background .12s ease;
+  line-height: 1.25;
+}
+.format small {
+  display: block; font-size: .74rem; font-weight: 600;
+  color: var(--gris); margin-top: 1px;
+}
+.format:hover:not(:disabled) { border-color: var(--miel); }
+.format.actif {
+  border-color: var(--miel-fonce); background: var(--creme-2);
+  box-shadow: inset 0 0 0 1px var(--miel-fonce);
+}
+.format.actif small { color: var(--ambre); }
+.format:disabled {
+  opacity: .45; cursor: not-allowed; text-decoration: line-through;
+  text-decoration-color: var(--rouge);
+}
+.format .pastille-panier {
+  display: inline-block; background: var(--miel); color: var(--brun-fonce);
+  border-radius: 10px; padding: 0 5px; font-size: .7rem; margin-left: 3px;
+}
+
 .ajout-panier { display: flex; gap: 8px; align-items: center; }
 .compteur { display: flex; align-items: center; border: 1px solid var(--bordure); border-radius: 10px; overflow: hidden; }
 .compteur button {

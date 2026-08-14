@@ -338,8 +338,18 @@
 
 const db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-let MIELS  = [];
-let PANIER = {};   // { miel_id: quantite }
+let MIELS   = [];       // chaque miel porte sa liste de formats
+let PANIER  = {};       // { format_id: quantite }
+let CHOISI  = {};       // { miel_id: format_id actuellement selectionne }
+
+/* Retrouve un format par son identifiant, tous miels confondus */
+function trouverFormat(formatId) {
+  for (const m of MIELS) {
+    const f = (m.formats || []).find(x => x.id === formatId);
+    if (f) return { format: f, miel: m };
+  }
+  return null;
+}
 
 /* ---------- Petits utilitaires ---------- */
 const euro = n => Number(n).toFixed(2).replace('.', ',') + ' €';
@@ -509,6 +519,7 @@ function nettoyerErreurServeur(msg) {
   const m = String(msg || '');
   if (/Stock insuffisant/i.test(m))        return m;   // deja clair et utile
   if (/n'est plus disponible/i.test(m))    return m;
+  if (/Format introuvable/i.test(m))       return "Ce format n'existe plus. Rechargez la page.";
   if (/Numero de telephone/i.test(m))      return "Ce numéro de téléphone ne semble pas valide.";
   if (/prenom et nom/i.test(m))            return "Indiquez votre prénom et votre nom.";
   if (/Nom invalide/i.test(m))             return "Ce nom ne semble pas valide.";
@@ -578,9 +589,10 @@ async function chargerMiels() {
     return;
   }
 
+  // un miel et tous ses formats en une seule requete
   const { data, error } = await db
     .from('miels')
-    .select('*')
+    .select('id, nom, description, ordre, formats(id, contenance, poids_g, prix, stock, disponible)')
     .eq('disponible', true)
     .order('ordre', { ascending: true })
     .order('nom', { ascending: true });
@@ -591,7 +603,22 @@ async function chargerMiels() {
     return;
   }
 
-  MIELS = data || [];
+  MIELS = (data || []).map(m => ({
+    ...m,
+    // du plus petit au plus grand pot, formats masques ecartes
+    formats: (m.formats || [])
+      .filter(f => f.disponible)
+      .sort((a, b) => (a.poids_g || 0) - (b.poids_g || 0))
+  })).filter(m => m.formats.length);   // un miel sans format ne s'affiche pas
+
+  // format choisi par defaut : le premier encore en stock
+  MIELS.forEach(m => {
+    const actuel = CHOISI[m.id];
+    if (actuel && m.formats.some(f => f.id === actuel)) return;
+    const dispo = m.formats.find(f => f.stock > 0) || m.formats[0];
+    CHOISI[m.id] = dispo.id;
+  });
+
   afficherMiels();
 }
 
@@ -606,45 +633,69 @@ function afficherMiels() {
   }
 
   zone.innerHTML = '<div class="grille-miels">' + MIELS.map(m => {
-    const q       = PANIER[m.id] || 0;
-    const epuise  = m.stock <= 0;
-    const restant = m.stock - q;
+    const fmt     = m.formats.find(f => f.id === CHOISI[m.id]) || m.formats[0];
+    const q       = PANIER[fmt.id] || 0;
+    const epuise  = fmt.stock <= 0;
+    const restant = fmt.stock - q;
+    // total de ce miel dans le panier, tous formats confondus
+    const totalMiel = m.formats.reduce((s, f) => s + (PANIER[f.id] || 0), 0);
 
     let classeStock = 'stock-ok', texteStock = 'Disponible';
-    if (epuise)            { classeStock = 'stock-zero'; texteStock = 'Épuisé'; }
-    else if (m.stock <= 3) { classeStock = 'stock-bas';  texteStock = 'Plus que ' + m.stock; }
+    if (epuise)              { classeStock = 'stock-zero'; texteStock = 'Épuisé'; }
+    else if (fmt.stock <= 3) { classeStock = 'stock-bas';  texteStock = 'Plus que ' + fmt.stock; }
+
+    // les boutons de format ne s'affichent que s'il y a un choix a faire
+    const choixFormats = m.formats.length > 1 ? `
+      <div class="formats" role="group" aria-label="Contenance">
+        ${m.formats.map(f => {
+          const qf = PANIER[f.id] || 0;
+          return `<button type="button"
+            class="format ${f.id === fmt.id ? 'actif' : ''}"
+            onclick="choisirFormat('${m.id}','${f.id}')"
+            ${f.stock <= 0 ? 'disabled title="Épuisé"' : ''}>
+            ${esc(f.contenance)}${qf ? `<span class="pastille-panier">${qf}</span>` : ''}
+            <small>${euro(f.prix)}</small>
+          </button>`;
+        }).join('')}
+      </div>` : `<div class="contenance-miel">${esc(fmt.contenance)}</div>`;
 
     return `
       <div class="carte-miel ${epuise ? 'epuise' : ''}">
         <img class="pot-icone" src="pot-miel.png" width="54" height="54" loading="lazy" decoding="async" alt="Pot de miel ${esc(m.nom)}">
         <div class="nom-miel">${esc(m.nom)}</div>
-        <div class="contenance-miel">${esc(m.contenance || '')}</div>
         <div class="desc-miel">${esc(m.description || '')}</div>
+        ${choixFormats}
         <div class="ligne-prix">
-          <span class="prix-miel">${euro(m.prix)}</span>
+          <span class="prix-miel">${euro(fmt.prix)}</span>
           <span class="stock-miel ${classeStock}">${texteStock}</span>
         </div>
         ${epuise ? '' : `
         <div class="ajout-panier">
           <div class="compteur">
-            <button onclick="modifierQte('${m.id}',-1)" ${q === 0 ? 'disabled' : ''} aria-label="Retirer">−</button>
+            <button onclick="modifierQte('${fmt.id}',-1)" ${q === 0 ? 'disabled' : ''} aria-label="Retirer">−</button>
             <span>${q}</span>
-            <button onclick="modifierQte('${m.id}',1)" ${restant <= 0 ? 'disabled' : ''} aria-label="Ajouter">+</button>
+            <button onclick="modifierQte('${fmt.id}',1)" ${restant <= 0 ? 'disabled' : ''} aria-label="Ajouter">+</button>
           </div>
-          <button class="btn btn-principal" onclick="modifierQte('${m.id}',1)" ${restant <= 0 ? 'disabled' : ''}>
-            ${q > 0 ? 'Ajouter' : 'Je le veux'}
+          <button class="btn btn-principal" onclick="modifierQte('${fmt.id}',1)" ${restant <= 0 ? 'disabled' : ''}>
+            ${totalMiel > 0 ? 'Ajouter' : 'Je le veux'}
           </button>
         </div>`}
       </div>`;
   }).join('') + '</div>';
 }
 
+/* Bascule d'un format a l'autre sur une carte */
+function choisirFormat(mielId, formatId) {
+  CHOISI[mielId] = formatId;
+  afficherMiels();
+}
+
 /* ---------- Gestion du panier ---------- */
-function modifierQte(id, delta) {
-  const miel = MIELS.find(m => m.id === id);
-  if (!miel) return;
-  const nouvelle = Math.max(0, Math.min(miel.stock, (PANIER[id] || 0) + delta));
-  if (nouvelle === 0) delete PANIER[id]; else PANIER[id] = nouvelle;
+function modifierQte(formatId, delta) {
+  const trouve = trouverFormat(formatId);
+  if (!trouve) return;
+  const nouvelle = Math.max(0, Math.min(trouve.format.stock, (PANIER[formatId] || 0) + delta));
+  if (nouvelle === 0) delete PANIER[formatId]; else PANIER[formatId] = nouvelle;
   afficherMiels();
   majBoutonPanier();
 }
@@ -655,8 +706,8 @@ function totalArticles() {
 
 function totalMiels() {
   return Object.entries(PANIER).reduce((s, [id, q]) => {
-    const m = MIELS.find(x => x.id === id);
-    return s + (m ? m.prix * q : 0);
+    const t = trouverFormat(id);
+    return s + (t ? t.format.prix * q : 0);
   }, 0);
 }
 
@@ -689,12 +740,13 @@ document.getElementById('voilePanier').addEventListener('click', e => {
 function afficherFormulaire(erreur) {
   const corps = document.getElementById('corpsModale');
   const lignes = Object.entries(PANIER).map(([id, q]) => {
-    const m = MIELS.find(x => x.id === id);
-    if (!m) return '';
+    const t = trouverFormat(id);
+    if (!t) return '';
+    const { format: f, miel: m } = t;
     return `<div class="ligne-panier">
-      <div class="lp-nom">${esc(m.nom)} <small>${esc(m.contenance || '')} · ${euro(m.prix)} × ${q}</small></div>
-      <div class="lp-prix">${euro(m.prix * q)}</div>
-      <button class="retirer" onclick="retirerDuPanier('${m.id}')" title="Retirer">✕</button>
+      <div class="lp-nom">${esc(m.nom)} <small>${esc(f.contenance)} · ${euro(f.prix)} × ${q}</small></div>
+      <div class="lp-prix">${euro(f.prix * q)}</div>
+      <button class="retirer" onclick="retirerDuPanier('${f.id}')" title="Retirer">✕</button>
     </div>`;
   }).join('');
 
@@ -811,8 +863,8 @@ function afficherFormulaire(erreur) {
   majRetrait();
 }
 
-function retirerDuPanier(id) {
-  delete PANIER[id];
+function retirerDuPanier(formatId) {
+  delete PANIER[formatId];
   afficherMiels();
   majBoutonPanier();
   if (totalArticles() === 0) { fermerPanier(); return; }
@@ -893,7 +945,7 @@ async function envoyerCommande(e) {
     ville   = document.getElementById('fVille').value.trim();
   }
 
-  const articles = Object.entries(PANIER).map(([miel_id, quantite]) => ({ miel_id, quantite }));
+  const articles = Object.entries(PANIER).map(([format_id, quantite]) => ({ format_id, quantite }));
   if (!articles.length) { afficherFormulaire('Votre réservation est vide.'); return; }
 
   btn.disabled = true;

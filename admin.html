@@ -173,7 +173,7 @@
       </svg>
       <div>
         <div class="titre-site">Espace gestion</div>
-        <div class="sous-titre-site">BeeHappy — Miel de Heilligenberg</div>
+        <div class="sous-titre-site">BeeHappy — Miel de Heiligenberg</div>
       </div>
     </div>
     <div class="entete-contact deconnexion" id="zoneDeconnexion" style="display:none">
@@ -311,29 +311,13 @@
         <div id="msgMiel"></div>
         <form id="formMiel">
           <input type="hidden" id="mId">
-          <div class="deux-colonnes">
-            <div class="champ">
-              <label for="mNom">Nom du miel <span class="obligatoire">*</span></label>
-              <input type="text" id="mNom" required placeholder="Miel de Sapin">
-            </div>
-            <div class="champ">
-              <label for="mContenance">Contenance</label>
-              <input type="text" id="mContenance" placeholder="500 g" value="500 g">
-            </div>
+          <div class="champ">
+            <label for="mNom">Nom du miel <span class="obligatoire">*</span></label>
+            <input type="text" id="mNom" required placeholder="Miel de Sapin">
           </div>
           <div class="champ">
             <label for="mDescription">Description</label>
             <textarea id="mDescription" placeholder="Miel foncé, goût boisé…"></textarea>
-          </div>
-          <div class="deux-colonnes">
-            <div class="champ">
-              <label for="mPrix">Prix (€) <span class="obligatoire">*</span></label>
-              <input type="number" id="mPrix" step="0.10" min="0" required placeholder="8.50">
-            </div>
-            <div class="champ">
-              <label for="mStock">Pots disponibles <span class="obligatoire">*</span></label>
-              <input type="number" id="mStock" min="0" required placeholder="20" value="0">
-            </div>
           </div>
           <div class="deux-colonnes">
             <div class="champ">
@@ -348,6 +332,9 @@
               </select>
             </div>
           </div>
+          <p style="font-size:.87rem;color:var(--gris);margin-bottom:12px">
+            Les prix et les stocks se règlent ensuite format par format, dans la liste ci-dessous.
+          </p>
           <button type="submit" class="btn btn-principal btn-large" id="btnEnregistrerMiel">Ajouter ce miel</button>
         </form>
       </div>
@@ -441,10 +428,20 @@ async function toutRecharger() {
 }
 
 async function chargerMiels() {
-  const { data, error } = await db.from('miels').select('*')
+  const { data, error } = await db.from('miels')
+    .select('id, nom, description, ordre, disponible, formats(id, contenance, poids_g, prix, stock, disponible)')
     .order('ordre', { ascending: true }).order('nom', { ascending: true });
-  if (error) { console.error(error); return; }
-  MIELS = data || [];
+  if (error) {
+    document.getElementById('tableMiels').innerHTML =
+      `<div class="alerte alerte-erreur" style="margin:18px">${esc(error.message)}<br>
+       <small>Si le message parle de « formats », c'est que le script
+       <code>supabase-formats.sql</code> n'a pas encore été exécuté.</small></div>`;
+    return;
+  }
+  MIELS = (data || []).map(m => ({
+    ...m,
+    formats: (m.formats || []).sort((a, b) => (a.poids_g || 0) - (b.poids_g || 0))
+  }));
   afficherMiels();
 }
 
@@ -472,7 +469,8 @@ function afficherStats() {
   const nouvelles = COMMANDES.filter(c => c.statut === 'nouvelle').length;
   const aRemettre = COMMANDES.filter(c => c.statut === 'preparee').length;
   const impayees  = COMMANDES.filter(c => !c.paye && c.statut !== 'annulee').length;
-  const potsRestants = MIELS.reduce((s, m) => s + (m.stock || 0), 0);
+  const potsRestants = MIELS.reduce((s, m) =>
+    s + (m.formats || []).reduce((t, f) => t + (f.stock || 0), 0), 0);
   const recette = COMMANDES.filter(c => c.paye).reduce((s, c) => s + Number(c.total || 0), 0);
 
   document.getElementById('zoneStats').innerHTML = `
@@ -660,28 +658,121 @@ function afficherMiels() {
     return;
   }
 
-  zone.innerHTML = `<table><thead><tr>
-      <th>Miel</th><th>Prix</th><th>Stock</th><th>Visible</th><th></th>
-    </tr></thead><tbody>` +
-    MIELS.map(m => `<tr>
-      <td><strong>${esc(m.nom)}</strong><br>
-        <small style="color:var(--gris)">${esc(m.contenance || '')}</small></td>
-      <td><strong>${euro(m.prix)}</strong></td>
-      <td>
-        <input type="number" class="stock-edit" min="0" value="${m.stock}"
-          onchange="majStock('${m.id}', this.value)" title="Modifier directement le stock">
-      </td>
-      <td>
-        <button class="btn btn-petit ${m.disponible ? 'btn-vert' : 'btn-secondaire'}"
-          onclick="basculerDispo('${m.id}', ${!m.disponible})">
-          ${m.disponible ? 'Oui' : 'Non'}
-        </button>
-      </td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-secondaire btn-petit" onclick="editerMiel('${m.id}')">✎</button>
-        <button class="btn btn-danger btn-petit" onclick="supprimerMiel('${m.id}')">🗑</button>
-      </td>
-    </tr>`).join('') + '</tbody></table>';
+  zone.innerHTML = MIELS.map(m => {
+    const totalPots = m.formats.reduce((s, f) => s + (f.stock || 0), 0);
+
+    const lignesFormats = m.formats.length
+      ? m.formats.map(f => `
+          <tr>
+            <td style="width:22%"><strong>${esc(f.contenance)}</strong></td>
+            <td style="width:24%">
+              <input type="number" class="stock-edit" style="width:86px" step="0.10" min="0"
+                     value="${Number(f.prix).toFixed(2)}"
+                     onchange="majFormat('${f.id}','prix',this.value)" title="Prix en euros"> €
+            </td>
+            <td style="width:24%">
+              <input type="number" class="stock-edit" min="0" value="${f.stock}"
+                     onchange="majFormat('${f.id}','stock',this.value)" title="Nombre de pots"> pots
+            </td>
+            <td style="width:18%">
+              <button class="btn btn-petit ${f.disponible ? 'btn-vert' : 'btn-secondaire'}"
+                      onclick="majFormat('${f.id}','disponible',${!f.disponible})">
+                ${f.disponible ? 'Visible' : 'Masqué'}
+              </button>
+            </td>
+            <td style="text-align:right">
+              <button class="btn btn-danger btn-petit" onclick="supprimerFormat('${f.id}','${esc(f.contenance)}')">🗑</button>
+            </td>
+          </tr>`).join('')
+      : `<tr><td colspan="5" style="color:var(--gris);font-style:italic">
+           Aucun format — ce miel n'apparaît pas sur le site. Ajoutez-en un ci-dessous.
+         </td></tr>`;
+
+    // les formats courants pas encore crees, en ajout rapide
+    const dejaLa  = m.formats.map(f => f.contenance.toLowerCase().replace(/\s/g, ''));
+    const rapides = [['250 g',250], ['500 g',500], ['1 kg',1000]]
+      .filter(([c]) => !dejaLa.includes(c.toLowerCase().replace(/\s/g, '')))
+      .map(([c,p]) => `<button class="btn btn-secondaire btn-petit"
+             onclick="ajouterFormat('${m.id}','${c}',${p})">+ ${c}</button>`).join(' ');
+
+    return `
+      <div class="panneau" style="margin:0 0 14px;box-shadow:none;border-radius:10px">
+        <div class="panneau-entete">
+          <div>
+            <h3 style="display:inline">${esc(m.nom)}</h3>
+            <span style="color:var(--gris);font-size:.86rem;margin-left:8px">
+              ${m.formats.length} format${m.formats.length > 1 ? 's' : ''} · ${totalPots} pot${totalPots > 1 ? 's' : ''} en stock
+            </span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-petit ${m.disponible ? 'btn-vert' : 'btn-secondaire'}"
+                    onclick="basculerDispo('${m.id}', ${!m.disponible})"
+                    title="Afficher ou masquer tout le miel">
+              ${m.disponible ? 'Sur le site' : 'Hors ligne'}
+            </button>
+            <button class="btn btn-secondaire btn-petit" onclick="editerMiel('${m.id}')" title="Modifier le nom et la description">✎</button>
+            <button class="btn btn-danger btn-petit" onclick="supprimerMiel('${m.id}')" title="Supprimer le miel">🗑</button>
+          </div>
+        </div>
+        <table>${lignesFormats}</table>
+        ${rapides ? `<div style="padding:12px 18px;border-top:1px solid var(--bordure);display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:.85rem;color:var(--gris);font-weight:700">Ajouter un format :</span>
+          ${rapides}
+          <button class="btn btn-secondaire btn-petit" onclick="ajouterFormatLibre('${m.id}')">+ autre…</button>
+        </div>` : `<div style="padding:12px 18px;border-top:1px solid var(--bordure)">
+          <button class="btn btn-secondaire btn-petit" onclick="ajouterFormatLibre('${m.id}')">+ autre format…</button>
+        </div>`}
+      </div>`;
+  }).join('');
+}
+
+/* ---------- Formats ---------- */
+async function ajouterFormat(mielId, contenance, poids) {
+  const m = MIELS.find(x => x.id === mielId);
+  // on reprend le prix du format le plus proche comme point de depart
+  const ref = m && m.formats.length ? m.formats[m.formats.length - 1] : null;
+  const prixEstime = ref ? Math.round(ref.prix * (poids / (ref.poids_g || 500)) * 2) / 2 : 0;
+
+  const { error } = await db.from('formats').insert({
+    miel_id: mielId, contenance, poids_g: poids,
+    prix: prixEstime, stock: 0, disponible: true
+  });
+  if (error) { alert('Erreur : ' + error.message); return; }
+  await chargerMiels();
+  afficherStats();
+}
+
+async function ajouterFormatLibre(mielId) {
+  const c = prompt('Contenance ? (ex. : 125 g, 750 g, 2 kg)');
+  if (!c || !c.trim()) return;
+  const txt = c.trim().toLowerCase();
+  let poids = parseFloat(txt.replace(',', '.')) || 500;
+  if (txt.includes('kg')) poids *= 1000;
+  await ajouterFormat(mielId, c.trim(), Math.round(poids));
+}
+
+async function majFormat(formatId, champ, valeur) {
+  let v = valeur;
+  if (champ === 'prix')  v = Math.max(0, parseFloat(valeur) || 0);
+  if (champ === 'stock') v = Math.max(0, parseInt(valeur) || 0);
+
+  const { error } = await db.from('formats').update({ [champ]: v }).eq('id', formatId);
+  if (error) { alert('Erreur : ' + error.message); return; }
+
+  for (const m of MIELS) {
+    const f = m.formats.find(x => x.id === formatId);
+    if (f) { f[champ] = v; break; }
+  }
+  afficherMiels();
+  afficherStats();
+}
+
+async function supprimerFormat(formatId, contenance) {
+  if (!confirm(`Supprimer le format ${contenance} ?\n\nAstuce : pour le retirer temporairement du site, cliquez plutôt sur « Visible ».`)) return;
+  const { error } = await db.from('formats').delete().eq('id', formatId);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  await chargerMiels();
+  afficherStats();
 }
 
 document.getElementById('formMiel').addEventListener('submit', async e => {
@@ -693,16 +784,22 @@ document.getElementById('formMiel').addEventListener('submit', async e => {
   const donnees = {
     nom:         document.getElementById('mNom').value.trim(),
     description: document.getElementById('mDescription').value.trim(),
-    contenance:  document.getElementById('mContenance').value.trim(),
-    prix:        parseFloat(document.getElementById('mPrix').value) || 0,
-    stock:       parseInt(document.getElementById('mStock').value) || 0,
     ordre:       parseInt(document.getElementById('mOrdre').value) || 0,
     disponible:  document.getElementById('mDisponible').value === 'true'
   };
 
-  const { error } = id
-    ? await db.from('miels').update(donnees).eq('id', id)
-    : await db.from('miels').insert(donnees);
+  const { data: cree, error } = id
+    ? await db.from('miels').update(donnees).eq('id', id).select('id').single()
+    : await db.from('miels').insert(donnees).select('id').single();
+
+  // un miel tout neuf recoit ses 3 formats habituels, a ajuster ensuite
+  if (!error && !id && cree) {
+    await db.from('formats').insert([
+      { miel_id: cree.id, contenance: '250 g', poids_g: 250,  prix: 0, stock: 0, disponible: true },
+      { miel_id: cree.id, contenance: '500 g', poids_g: 500,  prix: 0, stock: 0, disponible: true },
+      { miel_id: cree.id, contenance: '1 kg',  poids_g: 1000, prix: 0, stock: 0, disponible: true }
+    ]);
+  }
 
   btn.disabled = false;
   btn.textContent = id ? 'Enregistrer les modifications' : 'Ajouter ce miel';
@@ -712,7 +809,9 @@ document.getElementById('formMiel').addEventListener('submit', async e => {
     msg.innerHTML = `<div class="alerte alerte-erreur">${esc(error.message)}</div>`;
     return;
   }
-  msg.innerHTML = `<div class="alerte alerte-succes">${id ? 'Miel modifié.' : 'Miel ajouté.'}</div>`;
+  msg.innerHTML = `<div class="alerte alerte-succes">${id
+    ? 'Miel modifié.'
+    : 'Miel ajouté, avec ses 3 formats. Renseignez maintenant les prix et les stocks ci-dessous — un format à 0 pot s\'affiche « épuisé ».'}</div>`;
   setTimeout(() => msg.innerHTML = '', 3000);
   reinitFormMiel();
   await chargerMiels();
@@ -725,9 +824,6 @@ function editerMiel(id) {
   document.getElementById('mId').value = m.id;
   document.getElementById('mNom').value = m.nom;
   document.getElementById('mDescription').value = m.description || '';
-  document.getElementById('mContenance').value = m.contenance || '';
-  document.getElementById('mPrix').value = m.prix;
-  document.getElementById('mStock').value = m.stock;
   document.getElementById('mOrdre').value = m.ordre || 0;
   document.getElementById('mDisponible').value = String(m.disponible);
   document.getElementById('titreFormMiel').textContent = 'Modifier : ' + m.nom;
@@ -739,21 +835,10 @@ function editerMiel(id) {
 function reinitFormMiel() {
   document.getElementById('formMiel').reset();
   document.getElementById('mId').value = '';
-  document.getElementById('mContenance').value = '500 g';
-  document.getElementById('mStock').value = '0';
   document.getElementById('mOrdre').value = '0';
   document.getElementById('titreFormMiel').textContent = 'Ajouter un miel';
   document.getElementById('btnEnregistrerMiel').textContent = 'Ajouter ce miel';
   document.getElementById('btnAnnulerEdition').style.display = 'none';
-}
-
-async function majStock(id, valeur) {
-  const stock = Math.max(0, parseInt(valeur) || 0);
-  const { error } = await db.from('miels').update({ stock }).eq('id', id);
-  if (error) { alert('Erreur : ' + error.message); return; }
-  const m = MIELS.find(x => x.id === id);
-  if (m) m.stock = stock;
-  afficherStats();
 }
 
 async function basculerDispo(id, disponible) {
@@ -766,7 +851,7 @@ async function basculerDispo(id, disponible) {
 
 async function supprimerMiel(id) {
   const m = MIELS.find(x => x.id === id);
-  if (!confirm(`Supprimer "${m ? m.nom : ''}" ?\n\nAstuce : pour le retirer temporairement du site, mettez plutôt « Visible » sur Non.`)) return;
+  if (!confirm(`Supprimer "${m ? m.nom : ''}" et tous ses formats ?\n\nAstuce : pour le retirer temporairement du site, cliquez plutôt sur « Sur le site ».`)) return;
   const { error } = await db.from('miels').delete().eq('id', id);
   if (error) { alert('Erreur : ' + error.message); return; }
   await chargerMiels();
