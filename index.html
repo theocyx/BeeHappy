@@ -3,8 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BeeHappy — Miel de Heiligenberg</title>
-<meta name="description" content="Miel récolté à Heiligenberg, en Alsace. Réservez vos pots en quelques clics.">
+<title>Miel de Heiligenberg — BeeHappy, apiculture familiale en Alsace</title>
+<meta name="description" content="Miel récolté et mis en pot à la main à Heiligenberg (67190), Bas-Rhin. Sapin, acacia, fleurs, châtaignier. Réservez vos pots, retrait ou livraison.">
+
+<link rel="canonical" href="https://beehappy.fun/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="C. Godmet">
+<meta name="theme-color" content="#F4A423">
+
+<!-- Reperage geographique -->
+<meta name="geo.region" content="FR-67">
+<meta name="geo.placename" content="Heiligenberg">
+<meta name="geo.position" content="48.5333;7.3667">
+<meta name="ICBM" content="48.5333, 7.3667">
+
+<!-- Apercu au partage : WhatsApp, SMS, Facebook, Messenger -->
+<meta property="og:type"          content="website">
+<meta property="og:locale"        content="fr_FR">
+<meta property="og:site_name"     content="BeeHappy">
+<meta property="og:url"           content="https://beehappy.fun/">
+<meta property="og:title"         content="BeeHappy — Miel de Heiligenberg, Alsace">
+<meta property="og:description"   content="Miel récolté et mis en pot à la main dans un rucher familial. Réservez vos pots, réglez à la remise.">
+<meta property="og:image"         content="https://beehappy.fun/apercu-partage.png">
+<meta property="og:image:width"   content="1200">
+<meta property="og:image:height"  content="630">
+<meta property="og:image:alt"     content="BeeHappy, miel de Heiligenberg en Alsace">
+
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="BeeHappy — Miel de Heiligenberg, Alsace">
+<meta name="twitter:description" content="Miel récolté et mis en pot à la main dans un rucher familial. Réservez vos pots, réglez à la remise.">
+<meta name="twitter:image"       content="https://beehappy.fun/apercu-partage.png">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><ellipse cx='33' cy='36' rx='19' ry='11.5' transform='rotate(-32 33 36)' fill='%23fff'/><ellipse cx='87' cy='36' rx='19' ry='11.5' transform='rotate(32 87 36)' fill='%23fff'/><ellipse cx='60' cy='70' rx='31' ry='26' fill='%23F4A423'/><path d='M29 78h62v9.5H29z M29 60h62v9.5H29z M29 42h62v9.5H29z' fill='%233A2405'/><circle cx='60' cy='48' r='20.5' fill='%233A2405'/><circle cx='51.5' cy='45.5' r='5.6' fill='%23fff'/><circle cx='68.5' cy='45.5' r='5.6' fill='%23fff'/><circle cx='52.8' cy='46.6' r='2.9' fill='%232A1A04'/><circle cx='69.8' cy='46.6' r='2.9' fill='%232A1A04'/></svg>">
 </head>
@@ -12,20 +42,12 @@
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <linearGradient id="bhMiel" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FFD277"/><stop offset=".45" stop-color="#F4A423"/><stop offset="1" stop-color="#C46F00"/>
-    </linearGradient>
-    <linearGradient id="bhVerre" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".25" stop-color="#fff" stop-opacity=".08"/>
-      <stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#8A4E00" stop-opacity=".25"/>
-    </linearGradient>
     <linearGradient id="bhAile" x1="0" y1="0" x2=".4" y2="1">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#DCEBF5" stop-opacity=".62"/>
     </linearGradient>
     <linearGradient id="bhCorpsAb" x1=".2" y1="0" x2=".8" y2="1">
       <stop offset="0" stop-color="#FFD277"/><stop offset=".45" stop-color="#F4A423"/><stop offset="1" stop-color="#D07C05"/>
     </linearGradient>
-    <clipPath id="bhClipPot"><path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z"/></clipPath>
     <clipPath id="bhClipCorps"><ellipse cx="60" cy="70" rx="31" ry="26"/></clipPath>
   </defs>
 </svg>
@@ -96,8 +118,8 @@
                 stroke-width="2.8" stroke-linecap="round"/>
       </svg>
       <div>
-        <div class="titre-site" id="nomCommerce">BeeHappy</div>
-        <div class="sous-titre-site" id="sousTitre">Miel de Heiligenberg — Alsace</div>
+        <h1 class="titre-site" id="nomCommerce">BeeHappy</h1>
+        <p class="sous-titre-site" id="sousTitre">Miel de Heiligenberg — Alsace</p>
       </div>
     </div>
     <div class="entete-contact">
@@ -122,11 +144,25 @@
     <p><strong>Comment ça marche :</strong> vous indiquez les pots qui vous intéressent, on vous rappelle pour convenir du moment. Le règlement se fait de la main à la main, en espèces ou par chèque.</p>
   </div>
 
+  <section class="accroche" style="border-left-color:var(--ambre)">
+    <h2 style="font-size:1.05rem;color:var(--brun);margin-bottom:6px">Un miel de Heiligenberg, dans le Bas-Rhin</h2>
+    <p style="color:var(--gris);font-size:.94rem">
+      Nos ruches sont installées à <strong>Heiligenberg (67190)</strong>, entre Molsheim et la vallée de la Bruche,
+      au pied du Champ du Feu. Le miel est extrait, filtré et mis en pot à la main, sans mélange
+      ni transformation. Chaque récolte est différente selon la saison et la floraison.
+    </p>
+    <p style="color:var(--gris);font-size:.94rem;margin-top:6px">
+      Retrait sur place à Heiligenberg, remise en main propre dans les communes alentour
+      (Mutzig, Molsheim, Still, Dinsheim-sur-Bruche, Oberhaslach), ou envoi postal
+      partout en France.
+    </p>
+  </section>
+
   <h2 class="titre-section">Les miels du moment</h2>
 
   <div id="zoneMiels">
     <div class="vide">
-      <div class="vide-icone"><svg viewBox="0 0 72 72" width="44" height="44" aria-hidden="true"><path d="M15 34C15 27 22 24 36 24C50 24 57 27 57 34v18c0 7-6 11-14 11H29c-8 0-14-4-14-11z" fill="#F4A423"/><rect x="21" y="41" width="30" height="14" rx="2.6" fill="#FFF9EF"/><ellipse cx="36" cy="24" rx="21" ry="4.6" fill="#E8A825"/><rect x="15" y="16" width="42" height="8.5" rx="4" fill="#F0B62F"/></svg></div>
+      <div class="vide-icone"><img src="pot-miel.png" width="56" height="56" alt="" aria-hidden="true"></div>
       <p>Chargement des miels…</p>
     </div>
   </div>
@@ -134,7 +170,7 @@
 </main>
 
 <button class="bouton-panier" id="boutonPanier" style="display:none" onclick="ouvrirPanier()">
-  <svg viewBox="0 0 72 72" width="20" height="20" style="vertical-align:-4px" aria-hidden="true"><path d="M15 34C15 27 22 24 36 24C50 24 57 27 57 34v18c0 7-6 11-14 11H29c-8 0-14-4-14-11z" fill="#F4A423"/><rect x="21" y="41" width="30" height="14" rx="2.6" fill="#FFF9EF"/><ellipse cx="36" cy="24" rx="21" ry="4.6" fill="#E8A825"/><rect x="15" y="16" width="42" height="8.5" rx="4" fill="#F0B62F"/></svg> Ma réservation <span class="pastille" id="pastillePanier">0</span>
+  <img src="pot-miel.png" width="22" height="22" style="vertical-align:-5px" alt="" aria-hidden="true"> Ma réservation <span class="pastille" id="pastillePanier">0</span>
 </button>
 
 <!-- ======================= MODALE PANIER / COMMANDE ======================= -->
@@ -154,6 +190,110 @@
   <p style="margin-top:6px">Tél. <a id="telPied" href="#">06.81.38.03.15</a></p>
   <p style="margin-top:14px;opacity:.65;font-size:.82rem">Vente occasionnelle de miel de production familiale.<br>Aucun paiement en ligne — règlement à la remise des pots.</p>
 </footer>
+
+<!-- Fiche producteur pour les moteurs de recherche -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["LocalBusiness", "Store"],
+      "@id": "https://beehappy.fun/#commerce",
+      "name": "BeeHappy",
+      "alternateName": "BeeHappy — Miel de Heiligenberg",
+      "description": "Production familiale de miel à Heiligenberg, dans le Bas-Rhin. Miel de sapin, acacia, fleurs et châtaignier, récolté et mis en pot à la main. Vente directe du producteur.",
+      "url": "https://beehappy.fun/",
+      "image": "https://beehappy.fun/apercu-partage.png",
+      "logo": "https://beehappy.fun/apercu-partage.png",
+      "telephone": "+33681380315",
+      "priceRange": "€",
+      "currenciesAccepted": "EUR",
+      "paymentAccepted": "Espèces, Chèque",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Heiligenberg",
+        "postalCode": "67190",
+        "addressRegion": "Grand Est",
+        "addressCountry": "FR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 48.5333,
+        "longitude": 7.3667
+      },
+      "areaServed": [
+        { "@type": "AdministrativeArea", "name": "Bas-Rhin" },
+        { "@type": "City", "name": "Heiligenberg" },
+        { "@type": "City", "name": "Molsheim" },
+        { "@type": "City", "name": "Mutzig" },
+        { "@type": "Country", "name": "France" }
+      ],
+      "knowsLanguage": "fr-FR",
+      "founder": { "@type": "Person", "name": "C. Godmet" },
+      "makesOffer": {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Miel de Heiligenberg",
+          "category": "Miel",
+          "description": "Miel de production familiale : sapin, acacia, toutes fleurs, châtaignier."
+        },
+        "priceCurrency": "EUR",
+        "availableDeliveryMethod": [
+          "https://schema.org/OnSitePickup",
+          "https://schema.org/ParcelService"
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://beehappy.fun/#site",
+      "url": "https://beehappy.fun/",
+      "name": "BeeHappy — Miel de Heiligenberg",
+      "inLanguage": "fr-FR",
+      "publisher": { "@id": "https://beehappy.fun/#commerce" }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://beehappy.fun/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Comment commander du miel à Heiligenberg ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choisissez vos pots sur le site et laissez votre nom et votre téléphone. Nous vous rappelons pour convenir du moment de la remise."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Peut-on payer en ligne ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Non. Aucun paiement en ligne n'est demandé. Le règlement se fait en espèces ou par chèque au moment où vous récupérez vos pots."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Livrez-vous le miel ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Trois possibilités : le retrait sur place à Heiligenberg, la remise en main propre dans les communes alentour, ou l'envoi postal partout en France."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quels miels sont proposés ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cela dépend de la récolte : miel de sapin, d'acacia, de toutes fleurs et de châtaignier. Les miels disponibles et leur stock sont affichés en direct sur le site."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -442,7 +582,7 @@ function afficherMiels() {
 
     return `
       <div class="carte-miel ${epuise ? 'epuise' : ''}">
-        <svg class="pot-icone" viewBox="0 0 72 72" aria-hidden="true"><ellipse cx="36" cy="64" rx="20" ry="3" fill="#5A3A0A" opacity=".15"/>  <g transform="rotate(18 50 30)">    <rect x="48.6" y="4" width="2.8" height="22" rx="1.4" fill="#B8823C"/>    <circle cx="50" cy="4.5" r="2.2" fill="#B8823C"/>    <g fill="#9C6A28">      <ellipse cx="50" cy="29" rx="5.4" ry="6.4"/>    </g>    <g stroke="#7A5216" stroke-width="1" opacity=".65">      <path d="M44.8 26.5 h10.4"/><path d="M44.6 29 h10.8"/><path d="M45.4 31.5 h9.2"/>    </g>    <path d="M50 35 c1.6 3 1.6 5.4 0 6.6 -1.6-1.2-1.6-3.6 0-6.6z" fill="#F4A423"/>  </g>  <path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z" fill="url(#bhMiel)"/>  <g clip-path="url(#bhClipPot)">    <rect x="13" y="22" width="48" height="44" fill="url(#bhVerre)"/>    <ellipse cx="36" cy="30" rx="20" ry="4.2" fill="#FFCF6B" opacity=".5"/>    <ellipse cx="46" cy="60" rx="18" ry="9" fill="#8A4E00" opacity=".14"/>  </g>  <path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z" fill="none" stroke="#A85F04" stroke-opacity=".35" stroke-width="1.2"/>  <rect x="21" y="41" width="30" height="14" rx="2.6" fill="#FFF9EF" stroke="#E0C69A" stroke-width=".9"/>  <text x="36" y="50.2" font-family="Segoe UI,Arial,sans-serif" font-size="7.2" font-weight="800" fill="#5A3A0A" text-anchor="middle" letter-spacing=".6">MIEL</text>  <ellipse cx="36" cy="24" rx="21" ry="4.6" fill="#E8A825"/>  <rect x="15" y="16" width="42" height="8.5" rx="4" fill="#F0B62F"/>  <rect x="15" y="16" width="42" height="3" rx="1.5" fill="#FFDD8E" opacity=".7"/>  <g stroke="#B8823C" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round">    <path d="M22 19 v3"/><path d="M29 19 v3"/><path d="M36 19 v3"/><path d="M43 19 v3"/><path d="M50 19 v3"/>  </g></svg>
+        <img class="pot-icone" src="pot-miel.png" width="54" height="54" loading="lazy" decoding="async" alt="Pot de miel ${esc(m.nom)}">
         <div class="nom-miel">${esc(m.nom)}</div>
         <div class="contenance-miel">${esc(m.contenance || '')}</div>
         <div class="desc-miel">${esc(m.description || '')}</div>

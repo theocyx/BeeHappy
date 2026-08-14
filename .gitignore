@@ -1,0 +1,25 @@
+# ============================================================
+#  NE JAMAIS PUBLIER CES FICHIERS SUR GITHUB
+#  Ils contiennent des cles secretes et des donnees privees.
+#  Le depot est PUBLIC : tout ce qui y est deposé est visible
+#  par n'importe qui, et le reste dans l'historique meme
+#  apres suppression.
+# ============================================================
+
+# Scripts SQL : contiennent la cle API Resend et des adresses e-mail
+*.sql
+
+# Sources de travail et notes
+_*.svg
+notice-maman.html
+BeeHappy-notice.pdf
+A-FAIRE.md
+INSTALLATION.md
+DNS-beehappy-fun.md
+demo.html
+
+# Systeme
+.DS_Store
+Thumbs.db
+*.bak
+*~
