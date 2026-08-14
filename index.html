@@ -104,6 +104,205 @@ const euro = n => Number(n).toFixed(2).replace('.', ',') + ' €';
 const esc  = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+/* ============================================================
+   CONTROLE DES SAISIES
+   Objectif : bloquer les saisies manifestement bidons
+   (0606060606, « aaaa », 11111...) sans jamais rejeter
+   une vraie coordonnee. En cas de doute, on laisse passer.
+   ============================================================ */
+
+// nombre de caracteres differents dans une chaine
+const varietes = s => new Set(String(s).toLowerCase()).size;
+
+// normalise un numero francais : espaces, points, tirets, +33...
+function normaliserTel(v) {
+  let t = String(v || '').replace(/[\s.\-()\/]/g, '');
+  if (t.startsWith('+33'))  t = '0' + t.slice(3);
+  if (t.startsWith('0033')) t = '0' + t.slice(4);
+  if (t.startsWith('33') && t.length === 11) t = '0' + t.slice(2);
+  return t;
+}
+
+const VALIDE = {
+
+  nom(v) {
+    const n = String(v || '').trim();
+    if (!n)             return "Merci d'indiquer votre nom.";
+    if (/\d/.test(n))   return "Un nom ne contient pas de chiffres.";
+    if (!/^[\p{L}][\p{L}\s'’\-.]*$/u.test(n))
+                        return "Ce nom contient des caractères inattendus.";
+    const lettres = n.replace(/[^\p{L}]/gu, '');
+    if (lettres.length < 3)        return "Nom trop court — indiquez votre nom complet.";
+    if (varietes(lettres) < 3)     return "Ce nom ne semble pas réel.";
+    if (/(.)\1{2,}/u.test(lettres))return "Ce nom ne semble pas réel.";
+    if (!/[aeiouyàâäéèêëïîôöùûüÿœæ]/i.test(lettres))
+                                   return "Ce nom ne semble pas réel.";
+    if (n.length > 80)             return "Nom trop long.";
+
+    // prenom ET nom : au moins deux mots d'au moins 2 lettres
+    const mots = n.split(/\s+/).filter(m => m.replace(/[^\p{L}]/gu, '').length >= 2);
+    if (mots.length < 2)           return "Indiquez votre prénom et votre nom.";
+
+    // chaque mot doit rester credible pris isolement
+    for (const m of mots) {
+      const l = m.replace(/[^\p{L}]/gu, '');
+      if (l.length >= 3 && varietes(l) < 2) return "Ce nom ne semble pas réel.";
+    }
+    return null;
+  },
+
+  telephone(v) {
+    const t = normaliserTel(v);
+    if (!t)                        return "Merci d'indiquer un numéro pour vous rappeler.";
+    if (/[^\d]/.test(t))           return "Le numéro ne doit contenir que des chiffres.";
+    if (t.length !== 10)           return "Un numéro français fait 10 chiffres (ex. 06 12 34 56 78).";
+    if (!/^0[1-9]/.test(t))        return "Un numéro français commence par 01 à 09.";
+    if (varietes(t) < 3)           return "Ce numéro ne semble pas réel.";
+    if (/^(\d)\1+$/.test(t))       return "Ce numéro ne semble pas réel.";
+    if ('01234567890123456789'.includes(t) ||
+        '09876543210987654321'.includes(t))
+                                   return "Ce numéro ne semble pas réel.";
+    return null;
+  },
+
+  email(v) {
+    const e = String(v || '').trim();
+    if (!e) return null;                       // facultatif
+    if (e.length > 120)                        return "Adresse e-mail trop longue.";
+    if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(e))
+                                               return "Cette adresse e-mail n'est pas valide.";
+    if (/\.\./.test(e))                        return "Cette adresse e-mail n'est pas valide.";
+    return null;
+  },
+
+  adresse(v) {
+    const a = String(v || '').trim();
+    if (!a)                        return "Merci d'indiquer l'adresse.";
+    if (a.length < 5)              return "Adresse trop courte.";
+    if (varietes(a.replace(/\s/g, '')) < 5)
+                                   return "Cette adresse ne semble pas réelle.";
+    if (!/[\p{L}]{3}/u.test(a))    return "Cette adresse ne semble pas réelle.";
+    if (a.length > 120)            return "Adresse trop longue.";
+    return null;
+  },
+
+  codePostal(v) {
+    const c = String(v || '').trim().replace(/\s/g, '');
+    if (!c)                        return "Merci d'indiquer le code postal.";
+    if (!/^\d{5}$/.test(c))        return "Le code postal fait 5 chiffres (ex. 67190).";
+    const dep = c.slice(0, 2);
+    if (['00', '96', '99'].includes(dep))
+                                   return "Ce code postal n'existe pas.";
+    if (varietes(c) < 2)           return "Ce code postal ne semble pas réel.";
+    return null;
+  },
+
+  ville(v) {
+    const c = String(v || '').trim();
+    if (!c)                        return "Merci d'indiquer la ville.";
+    if (/\d/.test(c))              return "Une ville ne contient pas de chiffres.";
+    if (!/^[\p{L}][\p{L}\s'’\-]*$/u.test(c))
+                                   return "Ce nom de ville contient des caractères inattendus.";
+    const lettres = c.replace(/[^\p{L}]/gu, '');
+    if (lettres.length < 2)        return "Nom de ville trop court.";
+    if (varietes(lettres) < 3 && lettres.length > 2)
+                                   return "Cette ville ne semble pas réelle.";
+    if (/(.)\1{2,}/u.test(lettres))return "Cette ville ne semble pas réelle.";
+    if (c.length > 60)             return "Nom de ville trop long.";
+    return null;
+  },
+
+  message(v) {
+    const m = String(v || '').trim();
+    if (m.length > 500)            return "Message trop long (500 caractères maximum).";
+    return null;
+  }
+};
+
+/* Affiche ou efface le message d'erreur d'un champ */
+function marquerChamp(idChamp, message) {
+  const input = document.getElementById(idChamp);
+  if (!input) return !message;
+  const bloc = input.closest('.champ');
+  const zone = bloc ? bloc.querySelector('.erreur-champ') : null;
+
+  if (message) {
+    bloc.classList.add('invalide');
+    bloc.classList.remove('valide');
+    if (zone) zone.textContent = message;
+    return false;
+  }
+  bloc.classList.remove('invalide');
+  if (String(input.value || '').trim()) bloc.classList.add('valide');
+  else bloc.classList.remove('valide');
+  return true;
+}
+
+/* Verifie tout le formulaire. Renvoie la liste des champs en faute. */
+function verifierFormulaire() {
+  const mode = modeRetrait();
+  const fautes = [];
+  const test = (id, regle) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const msg = regle(el.value);
+    if (!marquerChamp(id, msg)) fautes.push(id);
+  };
+
+  test('fNom',     VALIDE.nom);
+  test('fTel',     VALIDE.telephone);
+  test('fEmail',   VALIDE.email);
+  test('fMessage', VALIDE.message);
+
+  if (mode === 'livraison' || mode === 'envoi') {
+    test('fAdresse', VALIDE.adresse);
+    test('fCP',      VALIDE.codePostal);
+    test('fVille',   VALIDE.ville);
+  }
+  return fautes;
+}
+
+/* Traduit les messages techniques de la base en francais lisible */
+function nettoyerErreurServeur(msg) {
+  const m = String(msg || '');
+  if (/Stock insuffisant/i.test(m))        return m;   // deja clair et utile
+  if (/n'est plus disponible/i.test(m))    return m;
+  if (/Numero de telephone/i.test(m))      return "Ce numéro de téléphone ne semble pas valide.";
+  if (/prenom et nom/i.test(m))            return "Indiquez votre prénom et votre nom.";
+  if (/Nom invalide/i.test(m))             return "Ce nom ne semble pas valide.";
+  if (/Adresse invalide|Code postal|Ville invalide/i.test(m))
+                                           return "L'adresse de livraison ne semble pas valide.";
+  if (/Trop de commandes|deja une commande/i.test(m))
+                                           return "Une réservation vient d'être envoyée avec ce numéro. Patientez une minute avant d'en envoyer une autre.";
+  if (/Commande trop volumineuse/i.test(m))return "Cette réservation est trop importante — contactez-nous directement par téléphone.";
+  if (/Le panier est vide/i.test(m))       return "Votre réservation est vide.";
+  if (/Failed to fetch|NetworkError/i.test(m))
+                                           return "Connexion interrompue. Vérifiez votre réseau et réessayez.";
+  return "Impossible d'enregistrer la réservation. Réessayez, ou appelez-nous directement.";
+}
+
+/* Controle a la sortie du champ, pour corriger au fil de l'eau */
+function brancherControles() {
+  const paires = [
+    ['fNom', VALIDE.nom], ['fTel', VALIDE.telephone], ['fEmail', VALIDE.email],
+    ['fAdresse', VALIDE.adresse], ['fCP', VALIDE.codePostal], ['fVille', VALIDE.ville]
+  ];
+  paires.forEach(([id, regle]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('blur', () => {
+      if (String(el.value || '').trim()) marquerChamp(id, regle(el.value));
+    });
+    // des qu'on corrige, on retire le rouge sans re-rouspeter tout de suite
+    el.addEventListener('input', () => {
+      const bloc = el.closest('.champ');
+      if (bloc && bloc.classList.contains('invalide') && !regle(el.value)) {
+        marquerChamp(id, null);
+      }
+    });
+  });
+}
+
 /* ---------- Application de la configuration ---------- */
 function appliquerConfig() {
   const t = (id, v) => { const e = document.getElementById(id); if (e && v) e.textContent = v; };
@@ -263,7 +462,7 @@ function afficherFormulaire(erreur) {
   }).join('');
 
   corps.innerHTML = `
-    ${erreur ? `<div class="alerte alerte-erreur">${esc(erreur)}</div>` : ''}
+    <div id="zoneAlerte">${erreur ? `<div class="alerte alerte-erreur">${esc(erreur)}</div>` : ''}</div>
     ${lignes || '<p class="vide">Votre réservation est vide.</p>'}
 
     <div class="total-bloc">
@@ -296,16 +495,20 @@ function afficherFormulaire(erreur) {
       <div id="blocAdresse" style="display:none;margin-top:14px">
         <div class="champ">
           <label for="fAdresse">Adresse <span class="obligatoire">*</span></label>
-          <input type="text" id="fAdresse" placeholder="12 rue des Abeilles" autocomplete="street-address">
+          <input type="text" id="fAdresse" placeholder="12 rue des Abeilles" autocomplete="street-address" maxlength="120">
+          <div class="erreur-champ"></div>
         </div>
         <div class="deux-colonnes">
           <div class="champ">
             <label for="fCP">Code postal <span class="obligatoire">*</span></label>
-            <input type="text" id="fCP" placeholder="67190" autocomplete="postal-code">
+            <input type="text" id="fCP" placeholder="67190" autocomplete="postal-code"
+                   inputmode="numeric" maxlength="5">
+            <div class="erreur-champ"></div>
           </div>
           <div class="champ">
             <label for="fVille">Ville <span class="obligatoire">*</span></label>
-            <input type="text" id="fVille" placeholder="Heilligenberg" autocomplete="address-level2">
+            <input type="text" id="fVille" placeholder="Heilligenberg" autocomplete="address-level2" maxlength="60">
+            <div class="erreur-champ"></div>
           </div>
         </div>
       </div>
@@ -327,21 +530,33 @@ function afficherFormulaire(erreur) {
       <h4 style="margin:20px 0 10px;color:var(--brun)">Vos coordonnées</h4>
       <div class="champ">
         <label for="fNom">Nom et prénom <span class="obligatoire">*</span></label>
-        <input type="text" id="fNom" required autocomplete="name" placeholder="Marie Dupont">
+        <input type="text" id="fNom" required autocomplete="name" placeholder="Marie Dupont" maxlength="80"
+               title="Prénom et nom, par exemple : Marie Dupont">
+        <div class="erreur-champ"></div>
       </div>
       <div class="deux-colonnes">
         <div class="champ">
           <label for="fTel">Téléphone <span class="obligatoire">*</span></label>
-          <input type="tel" id="fTel" required autocomplete="tel" placeholder="06 12 34 56 78">
+          <input type="tel" id="fTel" required autocomplete="tel" placeholder="06 12 34 56 78"
+                 inputmode="tel" maxlength="20">
+          <div class="erreur-champ"></div>
         </div>
         <div class="champ">
           <label for="fEmail">E-mail <span style="font-weight:400;color:var(--gris)">(facultatif)</span></label>
-          <input type="email" id="fEmail" autocomplete="email" placeholder="marie@exemple.fr">
+          <input type="email" id="fEmail" autocomplete="email" placeholder="marie@exemple.fr" maxlength="120">
+          <div class="erreur-champ"></div>
         </div>
       </div>
       <div class="champ">
         <label for="fMessage">Un mot à ajouter ?</label>
-        <textarea id="fMessage" placeholder="Ex. : je passe plutôt le samedi matin"></textarea>
+        <textarea id="fMessage" placeholder="Ex. : je passe plutôt le samedi matin" maxlength="500"></textarea>
+        <div class="erreur-champ"></div>
+      </div>
+
+      <!-- Piege a robots : un humain ne le voit pas et ne le remplit jamais -->
+      <div class="piege" aria-hidden="true">
+        <label for="fSiteWeb">Ne pas remplir</label>
+        <input type="text" id="fSiteWeb" name="site_web" tabindex="-1" autocomplete="off">
       </div>
 
       <div class="alerte alerte-info" style="margin:16px 0">
@@ -355,6 +570,7 @@ function afficherFormulaire(erreur) {
     </form>`;
 
   document.getElementById('formCommande').addEventListener('submit', envoyerCommande);
+  brancherControles();
   majRetrait();
 }
 
@@ -404,8 +620,30 @@ async function envoyerCommande(e) {
   e.preventDefault();
   const btn = document.getElementById('btnEnvoyer');
 
+  // --- piege a robots : rempli = ce n'est pas un humain ---
+  const piege = document.getElementById('fSiteWeb');
+  if (piege && piege.value) return;
+
+  // --- controle de toutes les saisies ---
+  const fautes = verifierFormulaire();
+  if (fautes.length) {
+    const premier = document.getElementById(fautes[0]);
+    if (premier) {
+      premier.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      premier.focus({ preventScroll: true });
+    }
+    const zone = document.getElementById('zoneAlerte');
+    if (zone) {
+      zone.innerHTML = `<div class="alerte alerte-erreur">${
+        fautes.length > 1
+          ? fautes.length + ' champs sont à corriger, voir les indications en rouge.'
+          : 'Un champ est à corriger, voir l\'indication en rouge.'}</div>`;
+    }
+    return;
+  }
+
   const nom  = document.getElementById('fNom').value.trim();
-  const tel  = document.getElementById('fTel').value.trim();
+  const tel  = normaliserTel(document.getElementById('fTel').value);
   const mail = document.getElementById('fEmail').value.trim();
   const msg  = document.getElementById('fMessage').value.trim();
   const mode = modeRetrait();
@@ -414,16 +652,8 @@ async function envoyerCommande(e) {
   let adresse = '', cp = '', ville = '';
   if (mode === 'livraison' || mode === 'envoi') {
     adresse = document.getElementById('fAdresse').value.trim();
-    cp      = document.getElementById('fCP').value.trim();
+    cp      = document.getElementById('fCP').value.trim().replace(/\s/g, '');
     ville   = document.getElementById('fVille').value.trim();
-    if (!adresse || !cp || !ville) {
-      afficherFormulaire("Merci d'indiquer l'adresse complète pour ce mode de remise.");
-      return;
-    }
-  }
-  if (!nom || !tel) {
-    afficherFormulaire('Le nom et le téléphone sont nécessaires pour vous recontacter.');
-    return;
   }
 
   const articles = Object.entries(PANIER).map(([miel_id, quantite]) => ({ miel_id, quantite }));
@@ -439,7 +669,17 @@ async function envoyerCommande(e) {
   });
 
   if (error) {
-    afficherFormulaire('Impossible d\'enregistrer : ' + error.message);
+    // on garde la saisie de la personne : on affiche juste le message en haut
+    const zone = document.getElementById('zoneAlerte');
+    const texte = nettoyerErreurServeur(error.message);
+    if (zone) {
+      zone.innerHTML = `<div class="alerte alerte-erreur">${esc(texte)}</div>`;
+      zone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      afficherFormulaire(texte);
+    }
+    btn.disabled = false;
+    btn.textContent = 'Envoyer ma réservation';
     return;
   }
 
