@@ -1,0 +1,259 @@
+/* ============================================================
+   BEE HAPPY - Feuille de style commune
+   Couleurs reprises de l'etiquette du pot
+   ============================================================ */
+
+:root {
+  --miel-clair:   #FDBA3B;
+  --miel:         #F4A423;
+  --miel-fonce:   #E08A0B;
+  --ambre:        #C46F00;
+  --brun:         #5A3A0A;
+  --brun-fonce:   #3A2405;
+  --creme:        #FFF9EF;
+  --creme-2:      #FDF0D8;
+  --blanc:        #FFFFFF;
+  --gris:         #7A6A55;
+  --bordure:      #EBD9B8;
+  --vert:         #2E7D4F;
+  --rouge:        #C0392B;
+  --ombre:        0 2px 10px rgba(90, 58, 10, .10);
+  --ombre-forte:  0 8px 30px rgba(90, 58, 10, .18);
+  --radius:       14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", Roboto, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  background: var(--creme);
+  color: var(--brun-fonce);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: var(--ambre); }
+
+/* ---------- Bandeau superieur ---------- */
+.entete {
+  background: linear-gradient(135deg, var(--miel-clair) 0%, var(--miel) 45%, var(--ambre) 100%);
+  color: var(--brun-fonce);
+  padding: 0;
+  box-shadow: var(--ombre);
+  position: relative;
+  z-index: 20;
+}
+.entete-interieur {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.logo-bloc { display: flex; align-items: center; gap: 14px; }
+.logo-svg { width: 62px; height: 62px; flex-shrink: 0; }
+.titre-site { font-size: 1.6rem; font-weight: 800; letter-spacing: .5px; line-height: 1.1; }
+.sous-titre-site { font-size: .9rem; font-weight: 600; opacity: .85; }
+.entete-contact { margin-left: auto; text-align: right; font-size: .88rem; font-weight: 600; }
+.entete-contact a { color: var(--brun-fonce); text-decoration: none; }
+
+/* ---------- Contenu ---------- */
+.page { max-width: 1100px; margin: 0 auto; padding: 26px 20px 80px; }
+
+.accroche {
+  background: var(--blanc);
+  border: 1px solid var(--bordure);
+  border-left: 5px solid var(--miel);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  box-shadow: var(--ombre);
+}
+.accroche p { color: var(--gris); }
+.accroche p + p { margin-top: 6px; }
+
+h2.titre-section {
+  font-size: 1.35rem;
+  margin: 30px 0 14px;
+  color: var(--brun);
+  display: flex; align-items: center; gap: 10px;
+}
+h2.titre-section::before {
+  content: ""; width: 22px; height: 4px; border-radius: 4px;
+  background: var(--miel); display: inline-block;
+}
+
+/* ---------- Grille des miels ---------- */
+.grille-miels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 18px;
+}
+.carte-miel {
+  background: var(--blanc);
+  border: 1px solid var(--bordure);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex; flex-direction: column;
+  box-shadow: var(--ombre);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.carte-miel:hover { transform: translateY(-3px); box-shadow: var(--ombre-forte); }
+.carte-miel.epuise { opacity: .55; }
+.pot-icone { width: 54px; height: 54px; margin-bottom: 10px; }
+.nom-miel { font-size: 1.12rem; font-weight: 700; color: var(--brun); }
+.contenance-miel { font-size: .8rem; color: var(--gris); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.desc-miel { font-size: .9rem; color: var(--gris); margin: 8px 0 12px; flex: 1; }
+.ligne-prix { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.prix-miel { font-size: 1.4rem; font-weight: 800; color: var(--ambre); }
+.stock-miel { font-size: .8rem; font-weight: 700; }
+.stock-ok { color: var(--vert); }
+.stock-bas { color: var(--miel-fonce); }
+.stock-zero { color: var(--rouge); }
+
+.ajout-panier { display: flex; gap: 8px; align-items: center; }
+.compteur { display: flex; align-items: center; border: 1px solid var(--bordure); border-radius: 10px; overflow: hidden; }
+.compteur button {
+  width: 34px; height: 38px; border: 0; background: var(--creme-2);
+  font-size: 1.15rem; font-weight: 700; color: var(--brun); cursor: pointer;
+}
+.compteur button:hover:not(:disabled) { background: var(--miel-clair); }
+.compteur button:disabled { opacity: .35; cursor: not-allowed; }
+.compteur span { width: 38px; text-align: center; font-weight: 700; }
+
+/* ---------- Boutons ---------- */
+.btn {
+  border: 0; border-radius: 10px; padding: 10px 18px;
+  font-size: .95rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: filter .15s ease, transform .1s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-principal { background: var(--miel); color: var(--brun-fonce); flex: 1; }
+.btn-principal:hover:not(:disabled) { filter: brightness(1.07); }
+.btn-secondaire { background: var(--creme-2); color: var(--brun); border: 1px solid var(--bordure); }
+.btn-secondaire:hover:not(:disabled) { background: var(--bordure); }
+.btn-danger { background: var(--rouge); color: #fff; }
+.btn-vert { background: var(--vert); color: #fff; }
+.btn-large { width: 100%; padding: 14px; font-size: 1.05rem; }
+
+/* ---------- Panier flottant ---------- */
+.bouton-panier {
+  position: fixed; right: 22px; bottom: 22px; z-index: 60;
+  background: var(--brun); color: var(--miel-clair);
+  border: 0; border-radius: 50px; padding: 15px 24px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  box-shadow: var(--ombre-forte); font-family: inherit;
+  display: flex; align-items: center; gap: 10px;
+}
+.bouton-panier:hover { filter: brightness(1.15); }
+.pastille {
+  background: var(--miel); color: var(--brun-fonce);
+  border-radius: 20px; padding: 1px 9px; font-size: .85rem; font-weight: 800;
+}
+
+/* ---------- Fenetre modale ---------- */
+.voile {
+  position: fixed; inset: 0; background: rgba(58, 36, 5, .55);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px; z-index: 100; overflow-y: auto;
+}
+.voile.ouvert { display: flex; }
+.modale {
+  background: var(--creme); border-radius: 18px; width: 100%; max-width: 620px;
+  box-shadow: var(--ombre-forte); margin: auto 0; overflow: hidden;
+}
+.modale-entete {
+  background: linear-gradient(135deg, var(--miel-clair), var(--miel));
+  padding: 16px 22px; display: flex; align-items: center; justify-content: space-between;
+}
+.modale-entete h3 { font-size: 1.2rem; color: var(--brun-fonce); }
+.fermer {
+  background: rgba(255,255,255,.45); border: 0; width: 32px; height: 32px;
+  border-radius: 50%; font-size: 1.2rem; cursor: pointer; color: var(--brun-fonce); line-height: 1;
+}
+.modale-corps { padding: 22px; }
+
+/* ---------- Formulaire ---------- */
+.champ { margin-bottom: 14px; }
+.champ label { display: block; font-size: .87rem; font-weight: 700; margin-bottom: 5px; color: var(--brun); }
+.champ .obligatoire { color: var(--rouge); }
+.champ input, .champ select, .champ textarea {
+  width: 100%; padding: 11px 13px; border: 1px solid var(--bordure);
+  border-radius: 10px; font-size: .95rem; font-family: inherit;
+  background: var(--blanc); color: var(--brun-fonce);
+}
+.champ input:focus, .champ select:focus, .champ textarea:focus {
+  outline: 2px solid var(--miel); outline-offset: 0; border-color: var(--miel);
+}
+.champ textarea { resize: vertical; min-height: 70px; }
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.choix-groupe { display: grid; gap: 8px; }
+.choix {
+  display: flex; gap: 11px; align-items: flex-start; padding: 12px 14px;
+  border: 1px solid var(--bordure); border-radius: 10px; background: var(--blanc); cursor: pointer;
+}
+.choix:hover { border-color: var(--miel); }
+.choix input { margin-top: 3px; accent-color: var(--miel-fonce); flex-shrink: 0; }
+.choix-titre { font-weight: 700; font-size: .93rem; }
+.choix-detail { font-size: .82rem; color: var(--gris); }
+.choix.actif { border-color: var(--miel-fonce); background: var(--creme-2); }
+
+/* ---------- Recapitulatif panier ---------- */
+.ligne-panier {
+  display: flex; align-items: center; gap: 10px; padding: 11px 0;
+  border-bottom: 1px dashed var(--bordure);
+}
+.ligne-panier:last-of-type { border-bottom: 0; }
+.lp-nom { flex: 1; font-weight: 600; font-size: .93rem; }
+.lp-nom small { display: block; color: var(--gris); font-weight: 500; }
+.lp-prix { font-weight: 700; min-width: 68px; text-align: right; }
+.retirer { background: none; border: 0; color: var(--rouge); cursor: pointer; font-size: 1.1rem; padding: 0 4px; }
+
+.total-bloc {
+  background: var(--blanc); border: 1px solid var(--bordure);
+  border-radius: 12px; padding: 14px 16px; margin: 16px 0;
+}
+.ligne-total { display: flex; justify-content: space-between; font-size: .92rem; color: var(--gris); }
+.ligne-total.grand {
+  font-size: 1.25rem; font-weight: 800; color: var(--brun);
+  border-top: 2px solid var(--bordure); margin-top: 9px; padding-top: 9px;
+}
+
+/* ---------- Messages ---------- */
+.alerte { padding: 12px 15px; border-radius: 10px; font-size: .9rem; font-weight: 600; margin-bottom: 14px; }
+.alerte-erreur { background: #FDECEA; color: #922; border: 1px solid #F5C6C0; }
+.alerte-succes { background: #E8F6EE; color: #1E5B3A; border: 1px solid #B8E0C8; }
+.alerte-info { background: var(--creme-2); color: var(--brun); border: 1px solid var(--bordure); }
+
+.vide { text-align: center; padding: 42px 20px; color: var(--gris); }
+.vide-icone { font-size: 2.6rem; margin-bottom: 8px; }
+
+.confirmation { text-align: center; padding: 12px 0 4px; }
+.confirmation .grand-numero {
+  font-size: 2.1rem; font-weight: 800; color: var(--ambre); margin: 6px 0 12px;
+}
+
+/* ---------- Pied de page ---------- */
+.pied {
+  background: var(--brun-fonce); color: var(--creme-2);
+  padding: 26px 20px; text-align: center; font-size: .88rem;
+}
+.pied strong { color: var(--miel-clair); }
+.pied a { color: var(--miel-clair); }
+.lien-admin { display: inline-block; margin-top: 12px; font-size: .8rem; opacity: .5; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 620px) {
+  .entete-interieur { padding: 14px 16px; }
+  .titre-site { font-size: 1.3rem; }
+  .entete-contact { margin-left: 0; text-align: left; width: 100%; }
+  .deux-colonnes { grid-template-columns: 1fr; }
+  .page { padding: 20px 14px 90px; }
+  .bouton-panier { left: 14px; right: 14px; justify-content: center; }
+  .modale-corps { padding: 16px; }
+}

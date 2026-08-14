@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BeeHappy — Miel de Heilligenberg</title>
+<meta name="description" content="Miel récolté à Heilligenberg, en Alsace. Réservez vos pots en quelques clics.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+</head>
+<body>
+
+<header class="entete">
+  <div class="entete-interieur">
+    <div class="logo-bloc">
+      <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
+        <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
+        <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
+        <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
+        <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
+        <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
+        <circle cx="49" cy="52" r="3.4" fill="#FFF"/>
+        <circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
+        <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/>
+        <circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
+      </svg>
+      <div>
+        <div class="titre-site" id="nomCommerce">BeeHappy</div>
+        <div class="sous-titre-site" id="sousTitre">Miel de Heilligenberg — Alsace</div>
+      </div>
+    </div>
+    <div class="entete-contact">
+      <div id="producteurEntete">C. Godmet</div>
+      <div><a id="telEntete" href="#">06.81.38.03.15</a></div>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+
+  <div class="accroche">
+    <p id="messageAccueil">Miel récolté et mis en pot à la main, dans notre rucher familial en Alsace.</p>
+    <p><strong>Comment ça marche :</strong> vous indiquez les pots qui vous intéressent, on vous rappelle pour convenir du moment. Le règlement se fait de la main à la main, en espèces ou par chèque.</p>
+  </div>
+
+  <h2 class="titre-section">Les miels du moment</h2>
+
+  <div id="zoneMiels">
+    <div class="vide">
+      <div class="vide-icone">🍯</div>
+      <p>Chargement des miels…</p>
+    </div>
+  </div>
+
+</main>
+
+<button class="bouton-panier" id="boutonPanier" style="display:none" onclick="ouvrirPanier()">
+  🍯 Ma réservation <span class="pastille" id="pastillePanier">0</span>
+</button>
+
+<!-- ======================= MODALE PANIER / COMMANDE ======================= -->
+<div class="voile" id="voilePanier">
+  <div class="modale">
+    <div class="modale-entete">
+      <h3 id="titreModale">Votre réservation</h3>
+      <button class="fermer" onclick="fermerPanier()" aria-label="Fermer">✕</button>
+    </div>
+    <div class="modale-corps" id="corpsModale"><!-- rempli par le script --></div>
+  </div>
+</div>
+
+<footer class="pied">
+  <p><strong id="nomPied">BeeHappy</strong> — <span id="producteurPied">C. Godmet</span></p>
+  <p id="lieuPied">Heilligenberg (67190), Alsace</p>
+  <p style="margin-top:6px">Tél. <a id="telPied" href="#">06.81.38.03.15</a></p>
+  <p style="margin-top:14px;opacity:.65;font-size:.82rem">Vente occasionnelle de miel de production familiale.<br>Aucun paiement en ligne — règlement à la remise des pots.</p>
+  <a class="lien-admin" href="admin.html">Espace gestion</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+/* ============================================================
+   BEE HAPPY - Page de commande
+   ============================================================ */
+
+const db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+let MIELS  = [];
+let PANIER = {};   // { miel_id: quantite }
+
+/* ---------- Petits utilitaires ---------- */
+const euro = n => Number(n).toFixed(2).replace('.', ',') + ' €';
+const esc  = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Application de la configuration ---------- */
+function appliquerConfig() {
+  const t = (id, v) => { const e = document.getElementById(id); if (e && v) e.textContent = v; };
+  t('nomCommerce', CONFIG.NOM_COMMERCE);
+  t('sousTitre', CONFIG.SOUS_TITRE);
+  t('producteurEntete', CONFIG.PRODUCTEUR);
+  t('nomPied', CONFIG.NOM_COMMERCE);
+  t('producteurPied', CONFIG.PRODUCTEUR);
+  t('lieuPied', CONFIG.ADRESSE_RETRAIT);
+  t('messageAccueil', CONFIG.MESSAGE_ACCUEIL);
+  document.title = CONFIG.NOM_COMMERCE + ' — ' + CONFIG.SOUS_TITRE;
+
+  ['telEntete', 'telPied'].forEach(id => {
+    const e = document.getElementById(id);
+    if (e && CONFIG.TELEPHONE) {
+      e.textContent = CONFIG.TELEPHONE;
+      e.href = 'tel:' + CONFIG.TELEPHONE.replace(/[^0-9+]/g, '');
+    }
+  });
+}
+
+/* ---------- Chargement des miels ---------- */
+async function chargerMiels() {
+  const zone = document.getElementById('zoneMiels');
+
+  if (CONFIG.SUPABASE_URL.includes('XXXXX')) {
+    zone.innerHTML = `<div class="alerte alerte-info">
+      <strong>Site pas encore configuré.</strong><br>
+      Ouvrez le fichier <code>config.js</code> et renseignez l'adresse et la clé Supabase
+      (voir le guide <code>INSTALLATION.md</code>).</div>`;
+    return;
+  }
+
+  const { data, error } = await db
+    .from('miels')
+    .select('*')
+    .eq('disponible', true)
+    .order('ordre', { ascending: true })
+    .order('nom', { ascending: true });
+
+  if (error) {
+    zone.innerHTML = `<div class="alerte alerte-erreur">
+      Impossible de charger les miels : ${esc(error.message)}</div>`;
+    return;
+  }
+
+  MIELS = data || [];
+  afficherMiels();
+}
+
+function afficherMiels() {
+  const zone = document.getElementById('zoneMiels');
+
+  if (!MIELS.length) {
+    zone.innerHTML = `<div class="vide"><div class="vide-icone">🐝</div>
+      <p><strong>Pas de miel proposé pour le moment.</strong></p>
+      <p>Revenez après la prochaine récolte, ou appelez directement.</p></div>`;
+    return;
+  }
+
+  zone.innerHTML = '<div class="grille-miels">' + MIELS.map(m => {
+    const q       = PANIER[m.id] || 0;
+    const epuise  = m.stock <= 0;
+    const restant = m.stock - q;
+
+    let classeStock = 'stock-ok', texteStock = 'Disponible';
+    if (epuise)            { classeStock = 'stock-zero'; texteStock = 'Épuisé'; }
+    else if (m.stock <= 3) { classeStock = 'stock-bas';  texteStock = 'Plus que ' + m.stock; }
+
+    return `
+      <div class="carte-miel ${epuise ? 'epuise' : ''}">
+        <svg class="pot-icone" viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="18" y="8" width="28" height="7" rx="2.5" fill="#5A3A0A"/>
+          <path d="M20 16 h24 c4 0 8 4 8 9 v25 c0 4-3 6-7 6 H27 c-4 0-7-2-7-6 V25 c0-5 4-9 8-9z" fill="#F4A423"/>
+          <path d="M23 30 h18 v18 h-18z" fill="#FFF9EF" opacity=".92"/>
+          <text x="32" y="43" font-size="10" text-anchor="middle" fill="#5A3A0A" font-weight="bold" font-family="sans-serif">MIEL</text>
+        </svg>
+        <div class="nom-miel">${esc(m.nom)}</div>
+        <div class="contenance-miel">${esc(m.contenance || '')}</div>
+        <div class="desc-miel">${esc(m.description || '')}</div>
+        <div class="ligne-prix">
+          <span class="prix-miel">${euro(m.prix)}</span>
+          <span class="stock-miel ${classeStock}">${texteStock}</span>
+        </div>
+        ${epuise ? '' : `
+        <div class="ajout-panier">
+          <div class="compteur">
+            <button onclick="modifierQte('${m.id}',-1)" ${q === 0 ? 'disabled' : ''} aria-label="Retirer">−</button>
+            <span>${q}</span>
+            <button onclick="modifierQte('${m.id}',1)" ${restant <= 0 ? 'disabled' : ''} aria-label="Ajouter">+</button>
+          </div>
+          <button class="btn btn-principal" onclick="modifierQte('${m.id}',1)" ${restant <= 0 ? 'disabled' : ''}>
+            ${q > 0 ? 'Ajouter' : 'Je le veux'}
+          </button>
+        </div>`}
+      </div>`;
+  }).join('') + '</div>';
+}
+
+/* ---------- Gestion du panier ---------- */
+function modifierQte(id, delta) {
+  const miel = MIELS.find(m => m.id === id);
+  if (!miel) return;
+  const nouvelle = Math.max(0, Math.min(miel.stock, (PANIER[id] || 0) + delta));
+  if (nouvelle === 0) delete PANIER[id]; else PANIER[id] = nouvelle;
+  afficherMiels();
+  majBoutonPanier();
+}
+
+function totalArticles() {
+  return Object.values(PANIER).reduce((s, q) => s + q, 0);
+}
+
+function totalMiels() {
+  return Object.entries(PANIER).reduce((s, [id, q]) => {
+    const m = MIELS.find(x => x.id === id);
+    return s + (m ? m.prix * q : 0);
+  }, 0);
+}
+
+function majBoutonPanier() {
+  const n = totalArticles();
+  const b = document.getElementById('boutonPanier');
+  document.getElementById('pastillePanier').textContent = n;
+  b.style.display = n > 0 ? 'flex' : 'none';
+}
+
+/* ---------- Ouverture / fermeture ---------- */
+function ouvrirPanier() {
+  document.getElementById('titreModale').textContent = 'Votre réservation';
+  document.getElementById('voilePanier').classList.add('ouvert');
+  document.body.style.overflow = 'hidden';
+  afficherFormulaire();
+}
+
+function fermerPanier() {
+  document.getElementById('voilePanier').classList.remove('ouvert');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerPanier(); });
+document.getElementById('voilePanier').addEventListener('click', e => {
+  if (e.target.id === 'voilePanier') fermerPanier();
+});
+
+/* ---------- Formulaire de commande ---------- */
+function afficherFormulaire(erreur) {
+  const corps = document.getElementById('corpsModale');
+  const lignes = Object.entries(PANIER).map(([id, q]) => {
+    const m = MIELS.find(x => x.id === id);
+    if (!m) return '';
+    return `<div class="ligne-panier">
+      <div class="lp-nom">${esc(m.nom)} <small>${esc(m.contenance || '')} · ${euro(m.prix)} × ${q}</small></div>
+      <div class="lp-prix">${euro(m.prix * q)}</div>
+      <button class="retirer" onclick="retirerDuPanier('${m.id}')" title="Retirer">✕</button>
+    </div>`;
+  }).join('');
+
+  corps.innerHTML = `
+    ${erreur ? `<div class="alerte alerte-erreur">${esc(erreur)}</div>` : ''}
+    ${lignes || '<p class="vide">Votre réservation est vide.</p>'}
+
+    <div class="total-bloc">
+      <div class="ligne-total"><span>Miel</span><span id="sousTotalTxt">${euro(totalMiels())}</span></div>
+      <div class="ligne-total" id="ligneFrais" style="display:none"><span id="labelFrais">Frais</span><span id="fraisTxt">0,00 €</span></div>
+      <div class="ligne-total grand"><span>Total à régler</span><span id="totalTxt">${euro(totalMiels())}</span></div>
+    </div>
+
+    <form id="formCommande" autocomplete="on">
+
+      <h4 style="margin:16px 0 10px;color:var(--brun)">Comment récupérez-vous le miel ?</h4>
+      <div class="choix-groupe" id="groupeRetrait">
+        <label class="choix actif">
+          <input type="radio" name="retrait" value="retrait" checked onchange="majRetrait()">
+          <span><span class="choix-titre">Je passe le chercher</span>
+          <span class="choix-detail">${esc(CONFIG.ADRESSE_RETRAIT)}</span></span>
+        </label>
+        <label class="choix">
+          <input type="radio" name="retrait" value="livraison" onchange="majRetrait()">
+          <span><span class="choix-titre">On se voit / vous me l'apportez</span>
+          <span class="choix-detail">${esc(CONFIG.ZONE_LIVRAISON)}${CONFIG.FRAIS_LIVRAISON_LOCALE > 0 ? ' — ' + euro(CONFIG.FRAIS_LIVRAISON_LOCALE) : ' — sans frais'}</span></span>
+        </label>
+        <label class="choix">
+          <input type="radio" name="retrait" value="envoi" onchange="majRetrait()">
+          <span><span class="choix-titre">Envoi par la poste</span>
+          <span class="choix-detail">Colis soigné — ${euro(CONFIG.FRAIS_ENVOI_POSTAL)} de frais</span></span>
+        </label>
+      </div>
+
+      <div id="blocAdresse" style="display:none;margin-top:14px">
+        <div class="champ">
+          <label for="fAdresse">Adresse <span class="obligatoire">*</span></label>
+          <input type="text" id="fAdresse" placeholder="12 rue des Abeilles" autocomplete="street-address">
+        </div>
+        <div class="deux-colonnes">
+          <div class="champ">
+            <label for="fCP">Code postal <span class="obligatoire">*</span></label>
+            <input type="text" id="fCP" placeholder="67190" autocomplete="postal-code">
+          </div>
+          <div class="champ">
+            <label for="fVille">Ville <span class="obligatoire">*</span></label>
+            <input type="text" id="fVille" placeholder="Heilligenberg" autocomplete="address-level2">
+          </div>
+        </div>
+      </div>
+
+      <h4 style="margin:20px 0 10px;color:var(--brun)">Règlement</h4>
+      <div class="choix-groupe">
+        <label class="choix actif">
+          <input type="radio" name="paiement" value="especes" checked onchange="majPaiement()">
+          <span><span class="choix-titre">En espèces</span>
+          <span class="choix-detail">Au moment où vous récupérez les pots</span></span>
+        </label>
+        <label class="choix">
+          <input type="radio" name="paiement" value="cheque" onchange="majPaiement()">
+          <span><span class="choix-titre">Par chèque</span>
+          <span class="choix-detail">À l'ordre de ${esc(CONFIG.PRODUCTEUR)}</span></span>
+        </label>
+      </div>
+
+      <h4 style="margin:20px 0 10px;color:var(--brun)">Vos coordonnées</h4>
+      <div class="champ">
+        <label for="fNom">Nom et prénom <span class="obligatoire">*</span></label>
+        <input type="text" id="fNom" required autocomplete="name" placeholder="Marie Dupont">
+      </div>
+      <div class="deux-colonnes">
+        <div class="champ">
+          <label for="fTel">Téléphone <span class="obligatoire">*</span></label>
+          <input type="tel" id="fTel" required autocomplete="tel" placeholder="06 12 34 56 78">
+        </div>
+        <div class="champ">
+          <label for="fEmail">E-mail <span style="font-weight:400;color:var(--gris)">(facultatif)</span></label>
+          <input type="email" id="fEmail" autocomplete="email" placeholder="marie@exemple.fr">
+        </div>
+      </div>
+      <div class="champ">
+        <label for="fMessage">Un mot à ajouter ?</label>
+        <textarea id="fMessage" placeholder="Ex. : je passe plutôt le samedi matin"></textarea>
+      </div>
+
+      <div class="alerte alerte-info" style="margin:16px 0">
+        ${esc(CONFIG.MESSAGE_PAIEMENT)}
+      </div>
+
+      <button type="submit" class="btn btn-principal btn-large" id="btnEnvoyer"
+        ${totalArticles() === 0 ? 'disabled' : ''}>
+        Envoyer ma réservation
+      </button>
+    </form>`;
+
+  document.getElementById('formCommande').addEventListener('submit', envoyerCommande);
+  majRetrait();
+}
+
+function retirerDuPanier(id) {
+  delete PANIER[id];
+  afficherMiels();
+  majBoutonPanier();
+  if (totalArticles() === 0) { fermerPanier(); return; }
+  afficherFormulaire();
+}
+
+function modeRetrait() {
+  const e = document.querySelector('input[name="retrait"]:checked');
+  return e ? e.value : 'retrait';
+}
+
+function majRetrait() {
+  document.querySelectorAll('#groupeRetrait .choix').forEach(l =>
+    l.classList.toggle('actif', l.querySelector('input').checked));
+
+  const mode = modeRetrait();
+  const besoinAdresse = (mode === 'livraison' || mode === 'envoi');
+  document.getElementById('blocAdresse').style.display = besoinAdresse ? 'block' : 'none';
+
+  let frais = 0, label = '';
+  if (mode === 'livraison') { frais = Number(CONFIG.FRAIS_LIVRAISON_LOCALE) || 0; label = 'Déplacement'; }
+  if (mode === 'envoi')     { frais = Number(CONFIG.FRAIS_ENVOI_POSTAL) || 0;     label = 'Frais postaux'; }
+
+  const ligne = document.getElementById('ligneFrais');
+  if (frais > 0) {
+    ligne.style.display = 'flex';
+    document.getElementById('labelFrais').textContent = label;
+    document.getElementById('fraisTxt').textContent = euro(frais);
+  } else {
+    ligne.style.display = 'none';
+  }
+  document.getElementById('totalTxt').textContent = euro(totalMiels() + frais);
+}
+
+function majPaiement() {
+  document.querySelectorAll('input[name="paiement"]').forEach(i =>
+    i.closest('.choix').classList.toggle('actif', i.checked));
+}
+
+/* ---------- Envoi de la commande ---------- */
+async function envoyerCommande(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnEnvoyer');
+
+  const nom  = document.getElementById('fNom').value.trim();
+  const tel  = document.getElementById('fTel').value.trim();
+  const mail = document.getElementById('fEmail').value.trim();
+  const msg  = document.getElementById('fMessage').value.trim();
+  const mode = modeRetrait();
+  const paie = document.querySelector('input[name="paiement"]:checked').value;
+
+  let adresse = '', cp = '', ville = '';
+  if (mode === 'livraison' || mode === 'envoi') {
+    adresse = document.getElementById('fAdresse').value.trim();
+    cp      = document.getElementById('fCP').value.trim();
+    ville   = document.getElementById('fVille').value.trim();
+    if (!adresse || !cp || !ville) {
+      afficherFormulaire("Merci d'indiquer l'adresse complète pour ce mode de remise.");
+      return;
+    }
+  }
+  if (!nom || !tel) {
+    afficherFormulaire('Le nom et le téléphone sont nécessaires pour vous recontacter.');
+    return;
+  }
+
+  const articles = Object.entries(PANIER).map(([miel_id, quantite]) => ({ miel_id, quantite }));
+  if (!articles.length) { afficherFormulaire('Votre réservation est vide.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+
+  const { data, error } = await db.rpc('passer_commande', {
+    p_nom: nom, p_email: mail, p_telephone: tel,
+    p_mode_retrait: mode, p_adresse: adresse, p_code_postal: cp, p_ville: ville,
+    p_paiement: paie, p_message: msg, p_articles: articles
+  });
+
+  if (error) {
+    afficherFormulaire('Impossible d\'enregistrer : ' + error.message);
+    return;
+  }
+
+  const numero = Array.isArray(data) && data[0] ? data[0].num_commande : '—';
+  afficherConfirmation(numero, mode, paie);
+  PANIER = {};
+  majBoutonPanier();
+  chargerMiels();
+}
+
+function afficherConfirmation(numero, mode, paie) {
+  const textesMode = {
+    retrait:   'Vous passez récupérer vos pots. ' + CONFIG.ADRESSE_RETRAIT + '.',
+    livraison: 'On convient ensemble d\'un moment pour vous remettre le miel.',
+    envoi:     'Le colis part dès que possible à l\'adresse indiquée.'
+  };
+  const textesPaie = {
+    especes: 'Règlement en espèces à la remise.',
+    cheque:  'Règlement par chèque à l\'ordre de ' + CONFIG.PRODUCTEUR + '.'
+  };
+
+  document.getElementById('titreModale').textContent = 'C\'est noté !';
+  document.getElementById('corpsModale').innerHTML = `
+    <div class="confirmation">
+      <div style="font-size:3rem">🐝</div>
+      <p style="font-weight:700;font-size:1.1rem;color:var(--brun)">Votre réservation est enregistrée</p>
+      <div class="grand-numero">N° ${esc(numero)}</div>
+      <div class="alerte alerte-succes" style="text-align:left">
+        <p style="margin-bottom:6px">${esc(textesMode[mode])}</p>
+        <p>${esc(textesPaie[paie])}</p>
+      </div>
+      <p style="color:var(--gris);font-size:.92rem">
+        ${esc(CONFIG.PRODUCTEUR)} vous recontacte pour convenir du moment.<br>
+        Une question ? <a href="tel:${esc((CONFIG.TELEPHONE||'').replace(/[^0-9+]/g,''))}">${esc(CONFIG.TELEPHONE)}</a>
+      </p>
+      <button class="btn btn-principal btn-large" style="margin-top:18px" onclick="fermerPanier()">Fermer</button>
+    </div>`;
+}
+
+/* ---------- Démarrage ---------- */
+appliquerConfig();
+chargerMiels();
+</script>
+</body>
+</html>

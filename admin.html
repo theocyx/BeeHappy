@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestion — BeeHappy</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+<style>
+  .onglets { display:flex; gap:6px; margin:22px 0 18px; border-bottom:2px solid var(--bordure); flex-wrap:wrap; }
+  .onglet {
+    background:none; border:0; padding:11px 20px; font-size:.98rem; font-weight:700;
+    color:var(--gris); cursor:pointer; font-family:inherit;
+    border-bottom:3px solid transparent; margin-bottom:-2px;
+  }
+  .onglet.actif { color:var(--ambre); border-bottom-color:var(--miel); }
+  .onglet:hover { color:var(--brun); }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:22px; }
+  .stat {
+    background:var(--blanc); border:1px solid var(--bordure); border-radius:12px;
+    padding:14px 16px; box-shadow:var(--ombre);
+  }
+  .stat-valeur { font-size:1.7rem; font-weight:800; color:var(--ambre); line-height:1.2; }
+  .stat-label { font-size:.8rem; color:var(--gris); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+
+  .panneau {
+    background:var(--blanc); border:1px solid var(--bordure); border-radius:var(--radius);
+    box-shadow:var(--ombre); overflow:hidden; margin-bottom:18px;
+  }
+  .panneau-entete {
+    padding:14px 18px; background:var(--creme-2); border-bottom:1px solid var(--bordure);
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
+  .panneau-entete h3 { font-size:1.05rem; color:var(--brun); }
+  .panneau-corps { padding:18px; }
+
+  table { width:100%; border-collapse:collapse; }
+  th {
+    text-align:left; padding:11px 14px; font-size:.78rem; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--gris); background:var(--creme-2); border-bottom:1px solid var(--bordure);
+  }
+  td { padding:12px 14px; border-bottom:1px solid var(--bordure); font-size:.92rem; vertical-align:middle; }
+  tr:last-child td { border-bottom:0; }
+  tr.cliquable { cursor:pointer; }
+  tr.cliquable:hover { background:var(--creme); }
+
+  .etiq {
+    display:inline-block; padding:3px 10px; border-radius:20px;
+    font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.3px; white-space:nowrap;
+  }
+  .etiq-nouvelle  { background:#FFF0D0; color:#8A5A00; }
+  .etiq-preparee  { background:#DCE8FA; color:#24457A; }
+  .etiq-remise    { background:#E0F3E7; color:#1E5B3A; }
+  .etiq-annulee   { background:#F6E0DD; color:#8A2A20; }
+  .etiq-paye      { background:var(--vert); color:#fff; }
+  .etiq-impaye    { background:#EFE6D4; color:#7A6A55; }
+
+  .connexion {
+    max-width:400px; margin:70px auto; background:var(--blanc);
+    border:1px solid var(--bordure); border-radius:18px; padding:34px 30px; box-shadow:var(--ombre-forte);
+  }
+  .connexion .logo-svg { width:76px; height:76px; margin:0 auto 14px; }
+  .connexion h2 { text-align:center; color:var(--brun); margin-bottom:6px; }
+  .connexion p.sous { text-align:center; color:var(--gris); font-size:.9rem; margin-bottom:22px; }
+
+  .barre-outils { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .barre-outils select, .barre-outils input {
+    padding:9px 12px; border:1px solid var(--bordure); border-radius:9px;
+    font-family:inherit; font-size:.9rem; background:var(--blanc); color:var(--brun-fonce);
+  }
+  .detail-cmd { background:var(--creme); }
+  .detail-cmd td { padding:16px 18px; }
+  .bloc-detail { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:14px; }
+  .bloc-detail h5 { font-size:.76rem; text-transform:uppercase; color:var(--gris); letter-spacing:.5px; margin-bottom:3px; }
+  .actions-cmd { display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--bordure); }
+  .btn-petit { padding:7px 13px; font-size:.85rem; }
+  .stock-edit { width:70px; padding:7px 9px; border:1px solid var(--bordure); border-radius:8px; font-family:inherit; text-align:center; }
+  .deconnexion { margin-left:auto; }
+  @media (max-width:640px) {
+    .cacher-mobile { display:none; }
+    td, th { padding:10px 8px; font-size:.86rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="entete">
+  <div class="entete-interieur">
+    <div class="logo-bloc">
+      <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
+        <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
+        <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
+        <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
+        <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
+        <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
+        <circle cx="49" cy="52" r="3.4" fill="#FFF"/><circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
+        <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/><circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
+      </svg>
+      <div>
+        <div class="titre-site">Espace gestion</div>
+        <div class="sous-titre-site">BeeHappy — Miel de Heilligenberg</div>
+      </div>
+    </div>
+    <div class="entete-contact deconnexion" id="zoneDeconnexion" style="display:none">
+      <div id="emailConnecte" style="font-size:.82rem;opacity:.8"></div>
+      <button class="btn btn-secondaire btn-petit" style="margin-top:5px" onclick="seDeconnecter()">Se déconnecter</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== ÉCRAN DE CONNEXION ===================== -->
+<div id="ecranConnexion" style="display:none">
+  <div class="connexion">
+    <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
+      <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
+      <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
+      <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
+      <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
+      <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
+      <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
+      <circle cx="49" cy="52" r="3.4" fill="#FFF"/><circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
+      <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/><circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
+    </svg>
+    <h2>Connexion</h2>
+    <p class="sous">Réservé à la gestion des miels et des commandes</p>
+    <div id="erreurConnexion"></div>
+    <form id="formConnexion">
+      <div class="champ">
+        <label for="cEmail">Adresse e-mail</label>
+        <input type="email" id="cEmail" required autocomplete="username">
+      </div>
+      <div class="champ">
+        <label for="cMdp">Mot de passe</label>
+        <input type="password" id="cMdp" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-principal btn-large" id="btnConnexion">Se connecter</button>
+    </form>
+    <p style="text-align:center;margin-top:18px;font-size:.86rem">
+      <a href="index.html">← Retour au site</a>
+    </p>
+  </div>
+</div>
+
+<!-- ===================== TABLEAU DE BORD ===================== -->
+<main class="page" id="ecranAdmin" style="display:none">
+
+  <div class="stats" id="zoneStats"></div>
+
+  <div class="onglets">
+    <button class="onglet actif" id="ongletCommandes" onclick="changerOnglet('commandes')">Commandes</button>
+    <button class="onglet" id="ongletMiels" onclick="changerOnglet('miels')">Mes miels</button>
+  </div>
+
+  <!-- ---------- Onglet commandes ---------- -->
+  <section id="vueCommandes">
+    <div class="barre-outils">
+      <select id="filtreStatut" onchange="afficherCommandes()">
+        <option value="actives">À traiter (nouvelles + préparées)</option>
+        <option value="tout">Toutes les commandes</option>
+        <option value="nouvelle">Nouvelles</option>
+        <option value="preparee">Préparées</option>
+        <option value="remise">Remises</option>
+        <option value="annulee">Annulées</option>
+      </select>
+      <input type="search" id="rechercheCmd" placeholder="Rechercher un nom, un téléphone…" oninput="afficherCommandes()">
+      <button class="btn btn-secondaire btn-petit" onclick="toutRecharger()">↻ Actualiser</button>
+      <button class="btn btn-secondaire btn-petit" onclick="exporterCSV()">⬇ Exporter en CSV</button>
+    </div>
+    <div class="panneau">
+      <div id="tableCommandes"><p style="padding:26px;text-align:center;color:var(--gris)">Chargement…</p></div>
+    </div>
+  </section>
+
+  <!-- ---------- Onglet miels ---------- -->
+  <section id="vueMiels" style="display:none">
+    <div class="panneau">
+      <div class="panneau-entete">
+        <h3 id="titreFormMiel">Ajouter un miel</h3>
+        <button class="btn btn-secondaire btn-petit" id="btnAnnulerEdition" style="display:none" onclick="reinitFormMiel()">Annuler la modification</button>
+      </div>
+      <div class="panneau-corps">
+        <div id="msgMiel"></div>
+        <form id="formMiel">
+          <input type="hidden" id="mId">
+          <div class="deux-colonnes">
+            <div class="champ">
+              <label for="mNom">Nom du miel <span class="obligatoire">*</span></label>
+              <input type="text" id="mNom" required placeholder="Miel de Sapin">
+            </div>
+            <div class="champ">
+              <label for="mContenance">Contenance</label>
+              <input type="text" id="mContenance" placeholder="500 g" value="500 g">
+            </div>
+          </div>
+          <div class="champ">
+            <label for="mDescription">Description</label>
+            <textarea id="mDescription" placeholder="Miel foncé, goût boisé…"></textarea>
+          </div>
+          <div class="deux-colonnes">
+            <div class="champ">
+              <label for="mPrix">Prix (€) <span class="obligatoire">*</span></label>
+              <input type="number" id="mPrix" step="0.10" min="0" required placeholder="8.50">
+            </div>
+            <div class="champ">
+              <label for="mStock">Pots disponibles <span class="obligatoire">*</span></label>
+              <input type="number" id="mStock" min="0" required placeholder="20" value="0">
+            </div>
+          </div>
+          <div class="deux-colonnes">
+            <div class="champ">
+              <label for="mOrdre">Ordre d'affichage</label>
+              <input type="number" id="mOrdre" value="0">
+            </div>
+            <div class="champ">
+              <label for="mDisponible">Visible sur le site</label>
+              <select id="mDisponible">
+                <option value="true">Oui, je le propose</option>
+                <option value="false">Non, je le cache</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-principal btn-large" id="btnEnregistrerMiel">Ajouter ce miel</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panneau">
+      <div class="panneau-entete"><h3>Mes miels</h3></div>
+      <div id="tableMiels"><p style="padding:26px;text-align:center;color:var(--gris)">Chargement…</p></div>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+/* ============================================================
+   BEEHAPPY - Espace de gestion
+   ============================================================ */
+
+const db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+let MIELS = [], COMMANDES = [], LIGNES = {}, ouverte = null;
+
+const euro = n => Number(n || 0).toFixed(2).replace('.', ',') + ' €';
+const esc  = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dateFr = d => new Date(d).toLocaleDateString('fr-FR',
+  { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+const LIBELLE_STATUT  = { nouvelle:'Nouvelle', preparee:'Préparée', remise:'Remise', annulee:'Annulée' };
+const LIBELLE_RETRAIT = { retrait:'Passe le chercher', livraison:'Remise en main propre', envoi:'Envoi postal' };
+const LIBELLE_PAIE    = { especes:'Espèces', cheque:'Chèque' };
+
+/* ---------------- Authentification ---------------- */
+async function verifierSession() {
+  if (CONFIG.SUPABASE_URL.includes('XXXXX')) {
+    document.getElementById('ecranConnexion').style.display = 'block';
+    document.getElementById('erreurConnexion').innerHTML =
+      `<div class="alerte alerte-info"><strong>Site pas encore configuré.</strong><br>
+       Renseignez l'adresse et la clé Supabase dans <code>config.js</code>.</div>`;
+    return;
+  }
+  const { data: { session } } = await db.auth.getSession();
+  session ? montrerAdmin(session) : montrerConnexion();
+}
+
+function montrerConnexion() {
+  document.getElementById('ecranConnexion').style.display = 'block';
+  document.getElementById('ecranAdmin').style.display = 'none';
+  document.getElementById('zoneDeconnexion').style.display = 'none';
+}
+
+function montrerAdmin(session) {
+  document.getElementById('ecranConnexion').style.display = 'none';
+  document.getElementById('ecranAdmin').style.display = 'block';
+  document.getElementById('zoneDeconnexion').style.display = 'block';
+  document.getElementById('emailConnecte').textContent = session.user.email;
+  toutRecharger();
+}
+
+document.getElementById('formConnexion').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btnConnexion');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email: document.getElementById('cEmail').value.trim(),
+    password: document.getElementById('cMdp').value
+  });
+
+  btn.disabled = false; btn.textContent = 'Se connecter';
+  if (error) {
+    document.getElementById('erreurConnexion').innerHTML =
+      `<div class="alerte alerte-erreur">Connexion refusée : ${esc(error.message)}</div>`;
+    return;
+  }
+  document.getElementById('erreurConnexion').innerHTML = '';
+  montrerAdmin(data.session);
+});
+
+async function seDeconnecter() {
+  await db.auth.signOut();
+  location.reload();
+}
+
+/* ---------------- Chargement des données ---------------- */
+async function toutRecharger() {
+  await Promise.all([chargerMiels(), chargerCommandes()]);
+  afficherStats();
+}
+
+async function chargerMiels() {
+  const { data, error } = await db.from('miels').select('*')
+    .order('ordre', { ascending: true }).order('nom', { ascending: true });
+  if (error) { console.error(error); return; }
+  MIELS = data || [];
+  afficherMiels();
+}
+
+async function chargerCommandes() {
+  const { data, error } = await db.from('commandes').select('*')
+    .order('cree_le', { ascending: false });
+  if (error) {
+    document.getElementById('tableCommandes').innerHTML =
+      `<div class="alerte alerte-erreur" style="margin:18px">${esc(error.message)}</div>`;
+    return;
+  }
+  COMMANDES = data || [];
+
+  const { data: lignes } = await db.from('lignes_commande').select('*');
+  LIGNES = {};
+  (lignes || []).forEach(l => {
+    (LIGNES[l.commande_id] = LIGNES[l.commande_id] || []).push(l);
+  });
+
+  afficherCommandes();
+}
+
+/* ---------------- Statistiques ---------------- */
+function afficherStats() {
+  const nouvelles = COMMANDES.filter(c => c.statut === 'nouvelle').length;
+  const aRemettre = COMMANDES.filter(c => c.statut === 'preparee').length;
+  const impayees  = COMMANDES.filter(c => !c.paye && c.statut !== 'annulee').length;
+  const potsRestants = MIELS.reduce((s, m) => s + (m.stock || 0), 0);
+  const recette = COMMANDES.filter(c => c.paye).reduce((s, c) => s + Number(c.total || 0), 0);
+
+  document.getElementById('zoneStats').innerHTML = `
+    <div class="stat"><div class="stat-valeur">${nouvelles}</div><div class="stat-label">Nouvelles</div></div>
+    <div class="stat"><div class="stat-valeur">${aRemettre}</div><div class="stat-label">Prêtes à remettre</div></div>
+    <div class="stat"><div class="stat-valeur">${impayees}</div><div class="stat-label">Pas encore réglées</div></div>
+    <div class="stat"><div class="stat-valeur">${potsRestants}</div><div class="stat-label">Pots en stock</div></div>
+    <div class="stat"><div class="stat-valeur">${euro(recette)}</div><div class="stat-label">Encaissé</div></div>`;
+}
+
+/* ---------------- Onglets ---------------- */
+function changerOnglet(nom) {
+  const cmd = nom === 'commandes';
+  document.getElementById('vueCommandes').style.display = cmd ? 'block' : 'none';
+  document.getElementById('vueMiels').style.display     = cmd ? 'none' : 'block';
+  document.getElementById('ongletCommandes').classList.toggle('actif', cmd);
+  document.getElementById('ongletMiels').classList.toggle('actif', !cmd);
+}
+
+/* ---------------- Commandes ---------------- */
+function commandesFiltrees() {
+  const filtre = document.getElementById('filtreStatut').value;
+  const q = document.getElementById('rechercheCmd').value.trim().toLowerCase();
+
+  return COMMANDES.filter(c => {
+    if (filtre === 'actives' && !['nouvelle','preparee'].includes(c.statut)) return false;
+    if (!['actives','tout'].includes(filtre) && c.statut !== filtre) return false;
+    if (q) {
+      const cible = [c.nom_client, c.telephone, c.email_client, c.ville, '#' + c.numero]
+        .join(' ').toLowerCase();
+      if (!cible.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function afficherCommandes() {
+  const liste = commandesFiltrees();
+  const zone = document.getElementById('tableCommandes');
+
+  if (!liste.length) {
+    zone.innerHTML = `<div class="vide"><div class="vide-icone">📋</div>
+      <p>Aucune commande à afficher.</p></div>`;
+    return;
+  }
+
+  zone.innerHTML = `<table><thead><tr>
+      <th>N°</th><th>Client</th><th class="cacher-mobile">Date</th>
+      <th class="cacher-mobile">Remise</th><th>Total</th><th>État</th><th>Réglé</th>
+    </tr></thead><tbody>` +
+    liste.map(c => {
+      const detail = ouverte === c.id ? ligneDetail(c) : '';
+      return `<tr class="cliquable" onclick="basculerDetail('${c.id}')">
+          <td><strong>#${c.numero}</strong></td>
+          <td>${esc(c.nom_client)}<br><small style="color:var(--gris)">${esc(c.telephone)}</small></td>
+          <td class="cacher-mobile">${dateFr(c.cree_le)}</td>
+          <td class="cacher-mobile">${esc(LIBELLE_RETRAIT[c.mode_retrait] || c.mode_retrait)}</td>
+          <td><strong>${euro(c.total)}</strong></td>
+          <td><span class="etiq etiq-${c.statut}">${esc(LIBELLE_STATUT[c.statut] || c.statut)}</span></td>
+          <td><span class="etiq ${c.paye ? 'etiq-paye' : 'etiq-impaye'}">${c.paye ? 'Oui' : 'Non'}</span></td>
+        </tr>${detail}`;
+    }).join('') + '</tbody></table>';
+}
+
+function ligneDetail(c) {
+  const articles = (LIGNES[c.id] || []).map(l =>
+    `<div class="ligne-panier">
+      <div class="lp-nom">${esc(l.nom_miel)} <small>${esc(l.contenance || '')} · ${euro(l.prix_unitaire)} × ${l.quantite}</small></div>
+      <div class="lp-prix">${euro(l.prix_unitaire * l.quantite)}</div>
+    </div>`).join('') || '<p style="color:var(--gris)">Aucun détail enregistré.</p>';
+
+  const adresse = c.adresse
+    ? `${esc(c.adresse)}<br>${esc(c.code_postal)} ${esc(c.ville)}`
+    : '<span style="color:var(--gris)">—</span>';
+
+  return `<tr class="detail-cmd"><td colspan="7" onclick="event.stopPropagation()">
+    <div class="bloc-detail">
+      <div><h5>Contact</h5>
+        <a href="tel:${esc((c.telephone||'').replace(/[^0-9+]/g,''))}">${esc(c.telephone)}</a>
+        ${c.email_client ? `<br><a href="mailto:${esc(c.email_client)}">${esc(c.email_client)}</a>` : ''}</div>
+      <div><h5>Remise</h5>${esc(LIBELLE_RETRAIT[c.mode_retrait] || c.mode_retrait)}<br>${adresse}</div>
+      <div><h5>Règlement prévu</h5>${esc(LIBELLE_PAIE[c.mode_paiement] || c.mode_paiement)}</div>
+      <div><h5>Commandé le</h5>${dateFr(c.cree_le)}</div>
+    </div>
+    ${c.message ? `<div class="alerte alerte-info"><strong>Message du client :</strong> ${esc(c.message)}</div>` : ''}
+    <h5 style="font-size:.76rem;text-transform:uppercase;color:var(--gris);letter-spacing:.5px;margin-bottom:4px">Détail</h5>
+    ${articles}
+    <div class="ligne-total grand" style="border-top:2px solid var(--bordure);margin-top:9px;padding-top:9px">
+      <span>Total</span><span>${euro(c.total)}</span>
+    </div>
+
+    <div class="champ" style="margin-top:14px">
+      <label for="note-${c.id}">Note personnelle</label>
+      <input type="text" id="note-${c.id}" value="${esc(c.note_interne || '')}"
+        placeholder="Ex. : passe samedi vers 10h" onchange="enregistrerNote('${c.id}', this.value)">
+    </div>
+
+    <div class="actions-cmd">
+      ${c.statut === 'nouvelle' ? `<button class="btn btn-secondaire btn-petit" onclick="changerStatut('${c.id}','preparee')">📦 Marquer préparée</button>` : ''}
+      ${c.statut !== 'remise'  ? `<button class="btn btn-vert btn-petit" onclick="changerStatut('${c.id}','remise')">✓ Miel remis</button>` : ''}
+      <button class="btn ${c.paye ? 'btn-secondaire' : 'btn-vert'} btn-petit" onclick="basculerPaye('${c.id}', ${!c.paye})">
+        ${c.paye ? '↩ Marquer non réglée' : '💶 Marquer réglée'}
+      </button>
+      ${c.statut !== 'annulee' ? `<button class="btn btn-secondaire btn-petit" onclick="changerStatut('${c.id}','annulee')">Annuler</button>` : ''}
+      ${c.statut === 'annulee' ? `<button class="btn btn-secondaire btn-petit" onclick="changerStatut('${c.id}','nouvelle')">↩ Réactiver</button>` : ''}
+      <button class="btn btn-danger btn-petit" onclick="supprimerCommande('${c.id}', ${c.numero})">🗑 Supprimer</button>
+    </div>
+  </td></tr>`;
+}
+
+function basculerDetail(id) {
+  ouverte = (ouverte === id) ? null : id;
+  afficherCommandes();
+}
+
+async function changerStatut(id, statut) {
+  const { error } = await db.from('commandes').update({ statut }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  const c = COMMANDES.find(x => x.id === id);
+  if (c) c.statut = statut;
+  afficherCommandes(); afficherStats();
+}
+
+async function basculerPaye(id, paye) {
+  const { error } = await db.from('commandes').update({ paye }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  const c = COMMANDES.find(x => x.id === id);
+  if (c) c.paye = paye;
+  afficherCommandes(); afficherStats();
+}
+
+async function enregistrerNote(id, note) {
+  const { error } = await db.from('commandes').update({ note_interne: note }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  const c = COMMANDES.find(x => x.id === id);
+  if (c) c.note_interne = note;
+}
+
+async function supprimerCommande(id, numero) {
+  if (!confirm(`Supprimer définitivement la commande #${numero} ?\n\nLe stock ne sera pas remis à jour automatiquement.`)) return;
+  const { error } = await db.from('commandes').delete().eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  ouverte = null;
+  await chargerCommandes();
+  afficherStats();
+}
+
+/* ---------------- Export CSV ---------------- */
+function exporterCSV() {
+  const liste = commandesFiltrees();
+  if (!liste.length) { alert('Aucune commande à exporter.'); return; }
+
+  const entetes = ['N°','Date','Client','Téléphone','E-mail','Remise','Adresse','CP','Ville',
+                   'Règlement','Total','État','Réglé','Miels','Note'];
+  const champ = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+
+  const lignes = liste.map(c => [
+    c.numero, dateFr(c.cree_le), c.nom_client, c.telephone, c.email_client,
+    LIBELLE_RETRAIT[c.mode_retrait] || c.mode_retrait,
+    c.adresse, c.code_postal, c.ville,
+    LIBELLE_PAIE[c.mode_paiement] || c.mode_paiement,
+    Number(c.total).toFixed(2).replace('.', ','),
+    LIBELLE_STATUT[c.statut] || c.statut,
+    c.paye ? 'Oui' : 'Non',
+    (LIGNES[c.id] || []).map(l => `${l.nom_miel} x${l.quantite}`).join(' / '),
+    c.note_interne
+  ].map(champ).join(';'));
+
+  const csv = '﻿' + entetes.map(champ).join(';') + '\n' + lignes.join('\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'commandes-beehappy-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------------- Miels ---------------- */
+function afficherMiels() {
+  const zone = document.getElementById('tableMiels');
+
+  if (!MIELS.length) {
+    zone.innerHTML = `<div class="vide"><div class="vide-icone">🍯</div>
+      <p>Aucun miel enregistré. Ajoutez-en un avec le formulaire ci-dessus.</p></div>`;
+    return;
+  }
+
+  zone.innerHTML = `<table><thead><tr>
+      <th>Miel</th><th>Prix</th><th>Stock</th><th>Visible</th><th></th>
+    </tr></thead><tbody>` +
+    MIELS.map(m => `<tr>
+      <td><strong>${esc(m.nom)}</strong><br>
+        <small style="color:var(--gris)">${esc(m.contenance || '')}</small></td>
+      <td><strong>${euro(m.prix)}</strong></td>
+      <td>
+        <input type="number" class="stock-edit" min="0" value="${m.stock}"
+          onchange="majStock('${m.id}', this.value)" title="Modifier directement le stock">
+      </td>
+      <td>
+        <button class="btn btn-petit ${m.disponible ? 'btn-vert' : 'btn-secondaire'}"
+          onclick="basculerDispo('${m.id}', ${!m.disponible})">
+          ${m.disponible ? 'Oui' : 'Non'}
+        </button>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-secondaire btn-petit" onclick="editerMiel('${m.id}')">✎</button>
+        <button class="btn btn-danger btn-petit" onclick="supprimerMiel('${m.id}')">🗑</button>
+      </td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+document.getElementById('formMiel').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btnEnregistrerMiel');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+
+  const id = document.getElementById('mId').value;
+  const donnees = {
+    nom:         document.getElementById('mNom').value.trim(),
+    description: document.getElementById('mDescription').value.trim(),
+    contenance:  document.getElementById('mContenance').value.trim(),
+    prix:        parseFloat(document.getElementById('mPrix').value) || 0,
+    stock:       parseInt(document.getElementById('mStock').value) || 0,
+    ordre:       parseInt(document.getElementById('mOrdre').value) || 0,
+    disponible:  document.getElementById('mDisponible').value === 'true'
+  };
+
+  const { error } = id
+    ? await db.from('miels').update(donnees).eq('id', id)
+    : await db.from('miels').insert(donnees);
+
+  btn.disabled = false;
+  btn.textContent = id ? 'Enregistrer les modifications' : 'Ajouter ce miel';
+
+  const msg = document.getElementById('msgMiel');
+  if (error) {
+    msg.innerHTML = `<div class="alerte alerte-erreur">${esc(error.message)}</div>`;
+    return;
+  }
+  msg.innerHTML = `<div class="alerte alerte-succes">${id ? 'Miel modifié.' : 'Miel ajouté.'}</div>`;
+  setTimeout(() => msg.innerHTML = '', 3000);
+  reinitFormMiel();
+  await chargerMiels();
+  afficherStats();
+});
+
+function editerMiel(id) {
+  const m = MIELS.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('mId').value = m.id;
+  document.getElementById('mNom').value = m.nom;
+  document.getElementById('mDescription').value = m.description || '';
+  document.getElementById('mContenance').value = m.contenance || '';
+  document.getElementById('mPrix').value = m.prix;
+  document.getElementById('mStock').value = m.stock;
+  document.getElementById('mOrdre').value = m.ordre || 0;
+  document.getElementById('mDisponible').value = String(m.disponible);
+  document.getElementById('titreFormMiel').textContent = 'Modifier : ' + m.nom;
+  document.getElementById('btnEnregistrerMiel').textContent = 'Enregistrer les modifications';
+  document.getElementById('btnAnnulerEdition').style.display = 'inline-block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function reinitFormMiel() {
+  document.getElementById('formMiel').reset();
+  document.getElementById('mId').value = '';
+  document.getElementById('mContenance').value = '500 g';
+  document.getElementById('mStock').value = '0';
+  document.getElementById('mOrdre').value = '0';
+  document.getElementById('titreFormMiel').textContent = 'Ajouter un miel';
+  document.getElementById('btnEnregistrerMiel').textContent = 'Ajouter ce miel';
+  document.getElementById('btnAnnulerEdition').style.display = 'none';
+}
+
+async function majStock(id, valeur) {
+  const stock = Math.max(0, parseInt(valeur) || 0);
+  const { error } = await db.from('miels').update({ stock }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  const m = MIELS.find(x => x.id === id);
+  if (m) m.stock = stock;
+  afficherStats();
+}
+
+async function basculerDispo(id, disponible) {
+  const { error } = await db.from('miels').update({ disponible }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  const m = MIELS.find(x => x.id === id);
+  if (m) m.disponible = disponible;
+  afficherMiels();
+}
+
+async function supprimerMiel(id) {
+  const m = MIELS.find(x => x.id === id);
+  if (!confirm(`Supprimer "${m ? m.nom : ''}" ?\n\nAstuce : pour le retirer temporairement du site, mettez plutôt « Visible » sur Non.`)) return;
+  const { error } = await db.from('miels').delete().eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  await chargerMiels();
+  afficherStats();
+}
+
+/* ---------------- Démarrage ---------------- */
+verifierSession();
+</script>
+</body>
+</html>

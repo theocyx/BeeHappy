@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vérification — BeeHappy</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="style.css">
+<style>
+  .test {
+    display:flex; gap:14px; align-items:flex-start; padding:15px 18px;
+    border-bottom:1px solid var(--bordure);
+  }
+  .test:last-child { border-bottom:0; }
+  .puce {
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:.95rem; color:#fff; margin-top:1px;
+  }
+  .p-attente { background:var(--bordure); color:var(--gris); }
+  .p-ok      { background:var(--vert); }
+  .p-ko      { background:var(--rouge); }
+  .p-avert   { background:var(--miel-fonce); }
+  .test-nom  { font-weight:700; color:var(--brun); }
+  .test-msg  { font-size:.9rem; color:var(--gris); margin-top:3px; }
+  .test-msg code {
+    background:var(--creme-2); padding:1px 6px; border-radius:5px;
+    font-size:.86rem; border:1px solid var(--bordure);
+  }
+  .resume { padding:20px; text-align:center; border-bottom:1px solid var(--bordure); }
+  .resume-grand { font-size:1.25rem; font-weight:800; margin-bottom:4px; }
+</style>
+</head>
+<body>
+
+<header class="entete">
+  <div class="entete-interieur">
+    <div class="logo-bloc">
+      <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
+        <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
+        <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
+        <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
+        <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
+        <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
+        <circle cx="49" cy="52" r="3.4" fill="#FFF"/><circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
+        <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/><circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
+      </svg>
+      <div>
+        <div class="titre-site">Vérification</div>
+        <div class="sous-titre-site">Est-ce que tout est bien branché ?</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="page" style="max-width:760px">
+
+  <div class="accroche">
+    <p>Cette page teste l'installation et indique précisément ce qui manque, s'il manque quelque chose.
+    Une fois que tout est vert, vous pouvez la supprimer.</p>
+  </div>
+
+  <div class="panneau" style="background:var(--blanc);border:1px solid var(--bordure);border-radius:var(--radius);box-shadow:var(--ombre);overflow:hidden">
+    <div class="resume" id="resume">
+      <div class="resume-grand" style="color:var(--gris)">Test en cours…</div>
+    </div>
+    <div id="tests"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:22px">
+    <button class="btn btn-principal" onclick="location.reload()">↻ Relancer les tests</button>
+    <a class="btn btn-secondaire" href="index.html" style="text-decoration:none;display:inline-block">Voir le site</a>
+    <a class="btn btn-secondaire" href="admin.html" style="text-decoration:none;display:inline-block">Espace gestion</a>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const zone = document.getElementById('tests');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const RESULTATS = [];
+
+function ajouter(etat, nom, msg) {
+  RESULTATS.push(etat);
+  const puces = { ok:['p-ok','✓'], ko:['p-ko','✕'], avert:['p-avert','!'], info:['p-attente','·'] };
+  const [cls, car] = puces[etat] || puces.info;
+  zone.insertAdjacentHTML('beforeend', `
+    <div class="test">
+      <div class="puce ${cls}">${car}</div>
+      <div>
+        <div class="test-nom">${esc(nom)}</div>
+        <div class="test-msg">${msg}</div>
+      </div>
+    </div>`);
+}
+
+function conclure() {
+  const ko = RESULTATS.filter(r => r === 'ko').length;
+  const av = RESULTATS.filter(r => r === 'avert').length;
+  const r = document.getElementById('resume');
+
+  if (ko > 0) {
+    r.innerHTML = `<div class="resume-grand" style="color:var(--rouge)">${ko} point${ko>1?'s':''} à corriger</div>
+      <div style="color:var(--gris);font-size:.9rem">Voir le détail ci-dessous.</div>`;
+  } else if (av > 0) {
+    r.innerHTML = `<div class="resume-grand" style="color:var(--miel-fonce)">Ça fonctionne, avec ${av} remarque${av>1?'s':''}</div>
+      <div style="color:var(--gris);font-size:.9rem">Le site est utilisable.</div>`;
+  } else {
+    r.innerHTML = `<div style="font-size:2.4rem">🐝</div>
+      <div class="resume-grand" style="color:var(--vert)">Tout est en ordre</div>
+      <div style="color:var(--gris);font-size:.9rem">Le site est prêt à être partagé.</div>`;
+  }
+}
+
+(async function lancer() {
+
+  /* --- 1. Le fichier de config est-il chargé ? --- */
+  if (typeof CONFIG === 'undefined') {
+    ajouter('ko', 'Fichier config.js',
+      'Introuvable. Vérifiez qu\'il est bien déposé à côté de <code>index.html</code>, avec exactement ce nom.');
+    return conclure();
+  }
+  ajouter('ok', 'Fichier config.js', 'Chargé correctement.');
+
+  /* --- 2. Les identifiants Supabase sont-ils remplis ? --- */
+  const url = (CONFIG.SUPABASE_URL || '').trim();
+  const cle = (CONFIG.SUPABASE_ANON_KEY || '').trim();
+
+  if (!url || url.includes('XXXXX')) {
+    ajouter('ko', 'Adresse Supabase',
+      'Pas encore renseignée. Dans <code>config.js</code>, remplacez la ligne <code>SUPABASE_URL</code> par votre Project URL (Supabase → Project Settings → API).');
+    return conclure();
+  }
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(url)) {
+    ajouter('avert', 'Adresse Supabase',
+      `Format inhabituel : <code>${esc(url)}</code>. On attend quelque chose comme <code>https://abcdefgh.supabase.co</code> (sans barre oblique finale).`);
+  } else {
+    ajouter('ok', 'Adresse Supabase', `<code>${esc(url)}</code>`);
+  }
+
+  if (!cle || cle.includes('colle-ici')) {
+    ajouter('ko', 'Clé Supabase',
+      'Pas encore renseignée. Copiez la clé <strong>anon public</strong> depuis Supabase → Project Settings → API.');
+    return conclure();
+  }
+  if (cle.startsWith('sb_secret_') || /service_role/i.test(cle)) {
+    ajouter('ko', 'Clé Supabase',
+      '<strong>Attention : c\'est une clé secrète</strong> (<code>service_role</code> ou <code>sb_secret_…</code>). Elle ne doit jamais être publiée. Remplacez-la par la clé publique (<strong>anon public</strong> ou <code>sb_publishable_…</code>), puis révoquez celle-ci dans Supabase.');
+    return conclure();
+  }
+  if (cle.length < 30) {
+    ajouter('ko', 'Clé Supabase', 'La clé semble incomplète — elle a été tronquée à la copie.');
+    return conclure();
+  }
+  const typeCle = cle.startsWith('sb_publishable_') ? 'publishable (nouveau format)'
+                : cle.startsWith('eyJ')             ? 'anon public (format classique)'
+                : 'format inhabituel';
+  if (typeCle === 'format inhabituel') {
+    ajouter('avert', 'Clé Supabase',
+      'Format non reconnu. On attend une clé commençant par <code>eyJ…</code> ou <code>sb_publishable_…</code>.');
+  } else {
+    ajouter('ok', 'Clé Supabase', 'Renseignée, et c\'est bien une clé publique — ' + typeCle + '.');
+  }
+
+  /* --- 3. Connexion au serveur --- */
+  let db;
+  try {
+    db = window.supabase.createClient(url, cle);
+  } catch (e) {
+    ajouter('ko', 'Connexion', 'Impossible d\'initialiser : ' + esc(e.message));
+    return conclure();
+  }
+
+  /* --- 4. La table des miels existe-t-elle ? --- */
+  const { data: miels, error: eMiels } = await db.from('miels').select('*');
+
+  if (eMiels) {
+    const m = eMiels.message || '';
+    if (/does not exist|schema cache|relation/i.test(m)) {
+      ajouter('ko', 'Table des miels',
+        'La table n\'existe pas. Le script <code>supabase-setup.sql</code> n\'a pas encore été exécuté : Supabase → SQL Editor → New query → coller tout le fichier → Run.');
+    } else if (/JWT|API key|Invalid/i.test(m)) {
+      ajouter('ko', 'Table des miels',
+        'Clé refusée par le serveur. Vérifiez que l\'adresse et la clé viennent bien du <em>même</em> projet Supabase.');
+    } else {
+      ajouter('ko', 'Table des miels', esc(m));
+    }
+    return conclure();
+  }
+
+  ajouter('ok', 'Base de données', `Connexion établie, script SQL bien exécuté.`);
+
+  /* --- 5. Contenu du catalogue --- */
+  const visibles = (miels || []).filter(m => m.disponible);
+  const enStock  = visibles.filter(m => m.stock > 0);
+
+  if (!miels.length) {
+    ajouter('avert', 'Les miels',
+      'Aucun miel enregistré. Ajoutez-en depuis l\'espace gestion, onglet « Mes miels ».');
+  } else if (!enStock.length) {
+    ajouter('avert', 'Les miels',
+      `${miels.length} miel(s) enregistré(s), mais aucun n'est visible avec du stock — la page publique affichera « pas de miel pour le moment ».`);
+  } else {
+    ajouter('ok', 'Les miels',
+      `${enStock.length} miel(s) proposés sur ${miels.length} enregistrés.`);
+  }
+
+  /* --- 6. Les commandes sont-elles bien protégées ? --- */
+  const { data: cmd, error: eCmd } = await db.from('commandes').select('id').limit(1);
+
+  if (eCmd || (cmd && cmd.length === 0)) {
+    ajouter('ok', 'Confidentialité des commandes',
+      'Un visiteur non connecté ne peut pas lire les commandes. C\'est le comportement attendu.');
+  } else {
+    ajouter('ko', 'Confidentialité des commandes',
+      '<strong>Les commandes sont lisibles publiquement.</strong> La sécurité (RLS) n\'est pas active. Relancez la partie 5 du script <code>supabase-setup.sql</code>.');
+  }
+
+  /* --- 7. La fonction de commande répond-elle ? --- */
+  const { error: eRpc } = await db.rpc('passer_commande', {
+    p_nom: '', p_email: '', p_telephone: '', p_mode_retrait: 'retrait',
+    p_adresse: '', p_code_postal: '', p_ville: '', p_paiement: 'especes',
+    p_message: '', p_articles: []
+  });
+
+  if (eRpc && /Le nom est obligatoire/i.test(eRpc.message)) {
+    ajouter('ok', 'Enregistrement des commandes',
+      'La fonction répond et rejette bien les commandes incomplètes. Aucune commande de test n\'a été créée.');
+  } else if (eRpc && /could not find|does not exist|schema cache/i.test(eRpc.message)) {
+    ajouter('ko', 'Enregistrement des commandes',
+      'La fonction <code>passer_commande</code> est absente. Réexécutez le script SQL en entier.');
+  } else if (eRpc && /permission|denied/i.test(eRpc.message)) {
+    ajouter('ko', 'Enregistrement des commandes',
+      'Permission refusée. La ligne <code>grant execute on function</code> du script SQL n\'a pas été appliquée.');
+  } else if (eRpc) {
+    ajouter('avert', 'Enregistrement des commandes', esc(eRpc.message));
+  } else {
+    ajouter('avert', 'Enregistrement des commandes',
+      'La fonction a accepté une commande vide — vérifiez que le script SQL est bien la dernière version.');
+  }
+
+  /* --- 8. Un compte de gestion existe-t-il ? --- */
+  const { data: sess } = await db.auth.getSession();
+  if (sess && sess.session) {
+    ajouter('ok', 'Compte de gestion', `Connecté en tant que ${esc(sess.session.user.email)}.`);
+  } else {
+    ajouter('info', 'Compte de gestion',
+      'Non connecté ici — normal. Testez la connexion sur <a href="admin.html">la page de gestion</a>. Si elle est refusée, recréez l\'utilisateur dans Supabase en cochant « Auto Confirm User ».');
+  }
+
+  /* --- 9. Contact affiché --- */
+  if (!CONFIG.TELEPHONE) {
+    ajouter('avert', 'Coordonnées', 'Aucun téléphone renseigné dans <code>config.js</code>.');
+  } else {
+    ajouter('ok', 'Coordonnées', `${esc(CONFIG.PRODUCTEUR)} — ${esc(CONFIG.TELEPHONE)}`);
+  }
+
+  conclure();
+})();
+</script>
+</body>
+</html>
