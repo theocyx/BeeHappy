@@ -6,7 +6,7 @@
 <title>Gestion — BeeHappy</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><ellipse cx='33' cy='36' rx='19' ry='11.5' transform='rotate(-32 33 36)' fill='%23fff'/><ellipse cx='87' cy='36' rx='19' ry='11.5' transform='rotate(32 87 36)' fill='%23fff'/><ellipse cx='60' cy='70' rx='31' ry='26' fill='%23F4A423'/><path d='M29 78h62v9.5H29z M29 60h62v9.5H29z M29 42h62v9.5H29z' fill='%233A2405'/><circle cx='60' cy='48' r='20.5' fill='%233A2405'/><circle cx='51.5' cy='45.5' r='5.6' fill='%23fff'/><circle cx='68.5' cy='45.5' r='5.6' fill='%23fff'/><circle cx='52.8' cy='46.6' r='2.9' fill='%232A1A04'/><circle cx='69.8' cy='46.6' r='2.9' fill='%232A1A04'/></svg>">
 <style>
   .onglets { display:flex; gap:6px; margin:22px 0 18px; border-bottom:2px solid var(--bordure); flex-wrap:wrap; }
   .onglet {
@@ -86,20 +86,90 @@
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bhMiel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFD277"/><stop offset=".45" stop-color="#F4A423"/><stop offset="1" stop-color="#C46F00"/>
+    </linearGradient>
+    <linearGradient id="bhVerre" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".25" stop-color="#fff" stop-opacity=".08"/>
+      <stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#8A4E00" stop-opacity=".25"/>
+    </linearGradient>
+    <linearGradient id="bhAile" x1="0" y1="0" x2=".4" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#DCEBF5" stop-opacity=".62"/>
+    </linearGradient>
+    <linearGradient id="bhCorpsAb" x1=".2" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#FFD277"/><stop offset=".45" stop-color="#F4A423"/><stop offset="1" stop-color="#D07C05"/>
+    </linearGradient>
+    <clipPath id="bhClipPot"><path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z"/></clipPath>
+    <clipPath id="bhClipCorps"><ellipse cx="60" cy="70" rx="31" ry="26"/></clipPath>
+  </defs>
+</svg>
+
+
 <header class="entete">
   <div class="entete-interieur">
     <div class="logo-bloc">
       <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
-        <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
-        <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
-        <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
-        <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
-        <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
-        <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
-        <circle cx="49" cy="52" r="3.4" fill="#FFF"/><circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
-        <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/><circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
+        <!-- ailes, derriere le corps -->
+          <g>
+            <ellipse cx="33" cy="36" rx="19" ry="11.5" transform="rotate(-32 33 36)"
+                     fill="url(#bhAile)" stroke="#B9CFE0" stroke-width="1.4" stroke-opacity=".7"/>
+            <ellipse cx="87" cy="36" rx="19" ry="11.5" transform="rotate(32 87 36)"
+                     fill="url(#bhAile)" stroke="#B9CFE0" stroke-width="1.4" stroke-opacity=".7"/>
+            <path d="M26 41 q9-7 17-9"  fill="none" stroke="#fff" stroke-width="1.6" stroke-opacity=".8" stroke-linecap="round"/>
+            <path d="M94 41 q-9-7-17-9" fill="none" stroke="#fff" stroke-width="1.6" stroke-opacity=".8" stroke-linecap="round"/>
+          </g>
+
+          <!-- dard -->
+          <path d="M60 94 l3.4 10.5 -6.8 0 z" fill="#3A2405"/>
+
+          <!-- corps -->
+          <ellipse cx="60" cy="70" rx="31" ry="26" fill="url(#bhCorpsAb)"/>
+
+          <!-- rayures -->
+          <g clip-path="url(#bhClipCorps)" fill="#3A2405">
+            <path d="M28 78 h64 v9.5 H28 z"/>
+            <path d="M28 60 h64 v9.5 H28 z"/>
+            <path d="M28 42 h64 v9.5 H28 z"/>
+          </g>
+
+          <!-- volume : ombre basse et lumiere haute -->
+          <g clip-path="url(#bhClipCorps)">
+            <ellipse cx="46" cy="54" rx="19" ry="12" fill="#fff" opacity=".22"/>
+            <ellipse cx="70" cy="92" rx="26" ry="14" fill="#8A4E00" opacity=".16"/>
+          </g>
+          <ellipse cx="60" cy="70" rx="31" ry="26" fill="none" stroke="#A85F04" stroke-opacity=".3" stroke-width="1.2"/>
+
+          <!-- antennes -->
+          <g fill="none" stroke="#3A2405" stroke-width="3.4" stroke-linecap="round">
+            <path d="M48 44 C43 32 38 25 33 21"/>
+            <path d="M72 44 C77 32 82 25 87 21"/>
+          </g>
+          <circle cx="32" cy="19.5" r="4.4" fill="#3A2405"/>
+          <circle cx="88" cy="19.5" r="4.4" fill="#3A2405"/>
+          <circle cx="30.6" cy="18.2" r="1.5" fill="#fff" opacity=".45"/>
+          <circle cx="86.6" cy="18.2" r="1.5" fill="#fff" opacity=".45"/>
+
+          <!-- tete -->
+          <circle cx="60" cy="48" r="20.5" fill="#3A2405"/>
+          <ellipse cx="53" cy="40" rx="10" ry="7" fill="#fff" opacity=".10"/>
+
+          <!-- yeux -->
+          <ellipse cx="51.5" cy="45.5" rx="5.4" ry="6.2" fill="#FFF9EF"/>
+          <ellipse cx="68.5" cy="45.5" rx="5.4" ry="6.2" fill="#FFF9EF"/>
+          <circle cx="52.8" cy="46.6" r="2.9" fill="#2A1A04"/>
+          <circle cx="69.8" cy="46.6" r="2.9" fill="#2A1A04"/>
+          <circle cx="51.7" cy="45.1" r="1.1" fill="#fff"/>
+          <circle cx="68.7" cy="45.1" r="1.1" fill="#fff"/>
+
+          <!-- joues -->
+          <ellipse cx="44.5" cy="54.5" rx="4" ry="2.6" fill="#F4A423" opacity=".5"/>
+          <ellipse cx="75.5" cy="54.5" rx="4" ry="2.6" fill="#F4A423" opacity=".5"/>
+
+          <!-- sourire -->
+          <path d="M53 56.5 q7 6.5 14 0" fill="none" stroke="#FFF9EF"
+                stroke-width="2.8" stroke-linecap="round"/>
       </svg>
       <div>
         <div class="titre-site">Espace gestion</div>
@@ -120,17 +190,66 @@
 <div id="ecranConnexion" style="display:none">
   <div class="connexion">
     <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
-      <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
-      <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
-      <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
-      <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
-      <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
-      <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
-      <circle cx="49" cy="52" r="3.4" fill="#FFF"/><circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
-      <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/><circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
-    </svg>
+        <!-- ailes, derriere le corps -->
+          <g>
+            <ellipse cx="33" cy="36" rx="19" ry="11.5" transform="rotate(-32 33 36)"
+                     fill="url(#bhAile)" stroke="#B9CFE0" stroke-width="1.4" stroke-opacity=".7"/>
+            <ellipse cx="87" cy="36" rx="19" ry="11.5" transform="rotate(32 87 36)"
+                     fill="url(#bhAile)" stroke="#B9CFE0" stroke-width="1.4" stroke-opacity=".7"/>
+            <path d="M26 41 q9-7 17-9"  fill="none" stroke="#fff" stroke-width="1.6" stroke-opacity=".8" stroke-linecap="round"/>
+            <path d="M94 41 q-9-7-17-9" fill="none" stroke="#fff" stroke-width="1.6" stroke-opacity=".8" stroke-linecap="round"/>
+          </g>
+
+          <!-- dard -->
+          <path d="M60 94 l3.4 10.5 -6.8 0 z" fill="#3A2405"/>
+
+          <!-- corps -->
+          <ellipse cx="60" cy="70" rx="31" ry="26" fill="url(#bhCorpsAb)"/>
+
+          <!-- rayures -->
+          <g clip-path="url(#bhClipCorps)" fill="#3A2405">
+            <path d="M28 78 h64 v9.5 H28 z"/>
+            <path d="M28 60 h64 v9.5 H28 z"/>
+            <path d="M28 42 h64 v9.5 H28 z"/>
+          </g>
+
+          <!-- volume : ombre basse et lumiere haute -->
+          <g clip-path="url(#bhClipCorps)">
+            <ellipse cx="46" cy="54" rx="19" ry="12" fill="#fff" opacity=".22"/>
+            <ellipse cx="70" cy="92" rx="26" ry="14" fill="#8A4E00" opacity=".16"/>
+          </g>
+          <ellipse cx="60" cy="70" rx="31" ry="26" fill="none" stroke="#A85F04" stroke-opacity=".3" stroke-width="1.2"/>
+
+          <!-- antennes -->
+          <g fill="none" stroke="#3A2405" stroke-width="3.4" stroke-linecap="round">
+            <path d="M48 44 C43 32 38 25 33 21"/>
+            <path d="M72 44 C77 32 82 25 87 21"/>
+          </g>
+          <circle cx="32" cy="19.5" r="4.4" fill="#3A2405"/>
+          <circle cx="88" cy="19.5" r="4.4" fill="#3A2405"/>
+          <circle cx="30.6" cy="18.2" r="1.5" fill="#fff" opacity=".45"/>
+          <circle cx="86.6" cy="18.2" r="1.5" fill="#fff" opacity=".45"/>
+
+          <!-- tete -->
+          <circle cx="60" cy="48" r="20.5" fill="#3A2405"/>
+          <ellipse cx="53" cy="40" rx="10" ry="7" fill="#fff" opacity=".10"/>
+
+          <!-- yeux -->
+          <ellipse cx="51.5" cy="45.5" rx="5.4" ry="6.2" fill="#FFF9EF"/>
+          <ellipse cx="68.5" cy="45.5" rx="5.4" ry="6.2" fill="#FFF9EF"/>
+          <circle cx="52.8" cy="46.6" r="2.9" fill="#2A1A04"/>
+          <circle cx="69.8" cy="46.6" r="2.9" fill="#2A1A04"/>
+          <circle cx="51.7" cy="45.1" r="1.1" fill="#fff"/>
+          <circle cx="68.7" cy="45.1" r="1.1" fill="#fff"/>
+
+          <!-- joues -->
+          <ellipse cx="44.5" cy="54.5" rx="4" ry="2.6" fill="#F4A423" opacity=".5"/>
+          <ellipse cx="75.5" cy="54.5" rx="4" ry="2.6" fill="#F4A423" opacity=".5"/>
+
+          <!-- sourire -->
+          <path d="M53 56.5 q7 6.5 14 0" fill="none" stroke="#FFF9EF"
+                stroke-width="2.8" stroke-linecap="round"/>
+      </svg>
     <h2>Connexion</h2>
     <p class="sous">Réservé à la gestion des miels et des commandes</p>
     <div id="erreurConnexion"></div>

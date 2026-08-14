@@ -6,26 +6,94 @@
 <title>BeeHappy — Miel de Heilligenberg</title>
 <meta name="description" content="Miel récolté à Heilligenberg, en Alsace. Réservez vos pots en quelques clics.">
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><ellipse cx='33' cy='36' rx='19' ry='11.5' transform='rotate(-32 33 36)' fill='%23fff'/><ellipse cx='87' cy='36' rx='19' ry='11.5' transform='rotate(32 87 36)' fill='%23fff'/><ellipse cx='60' cy='70' rx='31' ry='26' fill='%23F4A423'/><path d='M29 78h62v9.5H29z M29 60h62v9.5H29z M29 42h62v9.5H29z' fill='%233A2405'/><circle cx='60' cy='48' r='20.5' fill='%233A2405'/><circle cx='51.5' cy='45.5' r='5.6' fill='%23fff'/><circle cx='68.5' cy='45.5' r='5.6' fill='%23fff'/><circle cx='52.8' cy='46.6' r='2.9' fill='%232A1A04'/><circle cx='69.8' cy='46.6' r='2.9' fill='%232A1A04'/></svg>">
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bhMiel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFD277"/><stop offset=".45" stop-color="#F4A423"/><stop offset="1" stop-color="#C46F00"/>
+    </linearGradient>
+    <linearGradient id="bhVerre" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".25" stop-color="#fff" stop-opacity=".08"/>
+      <stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#8A4E00" stop-opacity=".25"/>
+    </linearGradient>
+    <linearGradient id="bhAile" x1="0" y1="0" x2=".4" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#DCEBF5" stop-opacity=".62"/>
+    </linearGradient>
+    <linearGradient id="bhCorpsAb" x1=".2" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#FFD277"/><stop offset=".45" stop-color="#F4A423"/><stop offset="1" stop-color="#D07C05"/>
+    </linearGradient>
+    <clipPath id="bhClipPot"><path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z"/></clipPath>
+    <clipPath id="bhClipCorps"><ellipse cx="60" cy="70" rx="31" ry="26"/></clipPath>
+  </defs>
+</svg>
+
 
 <header class="entete">
   <div class="entete-interieur">
     <div class="logo-bloc">
       <svg class="logo-svg" viewBox="0 0 120 120" aria-hidden="true">
-        <ellipse cx="60" cy="62" rx="30" ry="24" fill="#3A2405"/>
-        <path d="M40 46 q20 -10 40 0 v6 h-40z" fill="#FDBA3B"/>
-        <path d="M36 60 h48 v9 h-48z" fill="#FDBA3B"/>
-        <path d="M42 78 q18 9 36 0 v-4 h-36z" fill="#FDBA3B"/>
-        <ellipse cx="40" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(-25 40 36)"/>
-        <ellipse cx="80" cy="36" rx="17" ry="11" fill="#FFF9EF" opacity=".85" transform="rotate(25 80 36)"/>
-        <circle cx="49" cy="52" r="3.4" fill="#FFF"/>
-        <circle cx="50" cy="52.5" r="1.7" fill="#3A2405"/>
-        <path d="M50 30 q-6 -12 -14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M70 30 q6 -12 14 -15" stroke="#3A2405" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <circle cx="35.5" cy="14.5" r="3.4" fill="#3A2405"/>
-        <circle cx="84.5" cy="14.5" r="3.4" fill="#3A2405"/>
+        <!-- ailes, derriere le corps -->
+          <g>
+            <ellipse cx="33" cy="36" rx="19" ry="11.5" transform="rotate(-32 33 36)"
+                     fill="url(#bhAile)" stroke="#B9CFE0" stroke-width="1.4" stroke-opacity=".7"/>
+            <ellipse cx="87" cy="36" rx="19" ry="11.5" transform="rotate(32 87 36)"
+                     fill="url(#bhAile)" stroke="#B9CFE0" stroke-width="1.4" stroke-opacity=".7"/>
+            <path d="M26 41 q9-7 17-9"  fill="none" stroke="#fff" stroke-width="1.6" stroke-opacity=".8" stroke-linecap="round"/>
+            <path d="M94 41 q-9-7-17-9" fill="none" stroke="#fff" stroke-width="1.6" stroke-opacity=".8" stroke-linecap="round"/>
+          </g>
+
+          <!-- dard -->
+          <path d="M60 94 l3.4 10.5 -6.8 0 z" fill="#3A2405"/>
+
+          <!-- corps -->
+          <ellipse cx="60" cy="70" rx="31" ry="26" fill="url(#bhCorpsAb)"/>
+
+          <!-- rayures -->
+          <g clip-path="url(#bhClipCorps)" fill="#3A2405">
+            <path d="M28 78 h64 v9.5 H28 z"/>
+            <path d="M28 60 h64 v9.5 H28 z"/>
+            <path d="M28 42 h64 v9.5 H28 z"/>
+          </g>
+
+          <!-- volume : ombre basse et lumiere haute -->
+          <g clip-path="url(#bhClipCorps)">
+            <ellipse cx="46" cy="54" rx="19" ry="12" fill="#fff" opacity=".22"/>
+            <ellipse cx="70" cy="92" rx="26" ry="14" fill="#8A4E00" opacity=".16"/>
+          </g>
+          <ellipse cx="60" cy="70" rx="31" ry="26" fill="none" stroke="#A85F04" stroke-opacity=".3" stroke-width="1.2"/>
+
+          <!-- antennes -->
+          <g fill="none" stroke="#3A2405" stroke-width="3.4" stroke-linecap="round">
+            <path d="M48 44 C43 32 38 25 33 21"/>
+            <path d="M72 44 C77 32 82 25 87 21"/>
+          </g>
+          <circle cx="32" cy="19.5" r="4.4" fill="#3A2405"/>
+          <circle cx="88" cy="19.5" r="4.4" fill="#3A2405"/>
+          <circle cx="30.6" cy="18.2" r="1.5" fill="#fff" opacity=".45"/>
+          <circle cx="86.6" cy="18.2" r="1.5" fill="#fff" opacity=".45"/>
+
+          <!-- tete -->
+          <circle cx="60" cy="48" r="20.5" fill="#3A2405"/>
+          <ellipse cx="53" cy="40" rx="10" ry="7" fill="#fff" opacity=".10"/>
+
+          <!-- yeux -->
+          <ellipse cx="51.5" cy="45.5" rx="5.4" ry="6.2" fill="#FFF9EF"/>
+          <ellipse cx="68.5" cy="45.5" rx="5.4" ry="6.2" fill="#FFF9EF"/>
+          <circle cx="52.8" cy="46.6" r="2.9" fill="#2A1A04"/>
+          <circle cx="69.8" cy="46.6" r="2.9" fill="#2A1A04"/>
+          <circle cx="51.7" cy="45.1" r="1.1" fill="#fff"/>
+          <circle cx="68.7" cy="45.1" r="1.1" fill="#fff"/>
+
+          <!-- joues -->
+          <ellipse cx="44.5" cy="54.5" rx="4" ry="2.6" fill="#F4A423" opacity=".5"/>
+          <ellipse cx="75.5" cy="54.5" rx="4" ry="2.6" fill="#F4A423" opacity=".5"/>
+
+          <!-- sourire -->
+          <path d="M53 56.5 q7 6.5 14 0" fill="none" stroke="#FFF9EF"
+                stroke-width="2.8" stroke-linecap="round"/>
       </svg>
       <div>
         <div class="titre-site" id="nomCommerce">BeeHappy</div>
@@ -58,7 +126,7 @@
 
   <div id="zoneMiels">
     <div class="vide">
-      <div class="vide-icone">🍯</div>
+      <div class="vide-icone"><svg viewBox="0 0 72 72" width="44" height="44" aria-hidden="true"><path d="M15 34C15 27 22 24 36 24C50 24 57 27 57 34v18c0 7-6 11-14 11H29c-8 0-14-4-14-11z" fill="#F4A423"/><rect x="21" y="41" width="30" height="14" rx="2.6" fill="#FFF9EF"/><ellipse cx="36" cy="24" rx="21" ry="4.6" fill="#E8A825"/><rect x="15" y="16" width="42" height="8.5" rx="4" fill="#F0B62F"/></svg></div>
       <p>Chargement des miels…</p>
     </div>
   </div>
@@ -66,7 +134,7 @@
 </main>
 
 <button class="bouton-panier" id="boutonPanier" style="display:none" onclick="ouvrirPanier()">
-  🍯 Ma réservation <span class="pastille" id="pastillePanier">0</span>
+  <svg viewBox="0 0 72 72" width="20" height="20" style="vertical-align:-4px" aria-hidden="true"><path d="M15 34C15 27 22 24 36 24C50 24 57 27 57 34v18c0 7-6 11-14 11H29c-8 0-14-4-14-11z" fill="#F4A423"/><rect x="21" y="41" width="30" height="14" rx="2.6" fill="#FFF9EF"/><ellipse cx="36" cy="24" rx="21" ry="4.6" fill="#E8A825"/><rect x="15" y="16" width="42" height="8.5" rx="4" fill="#F0B62F"/></svg> Ma réservation <span class="pastille" id="pastillePanier">0</span>
 </button>
 
 <!-- ======================= MODALE PANIER / COMMANDE ======================= -->
@@ -374,12 +442,7 @@ function afficherMiels() {
 
     return `
       <div class="carte-miel ${epuise ? 'epuise' : ''}">
-        <svg class="pot-icone" viewBox="0 0 64 64" aria-hidden="true">
-          <rect x="18" y="8" width="28" height="7" rx="2.5" fill="#5A3A0A"/>
-          <path d="M20 16 h24 c4 0 8 4 8 9 v25 c0 4-3 6-7 6 H27 c-4 0-7-2-7-6 V25 c0-5 4-9 8-9z" fill="#F4A423"/>
-          <path d="M23 30 h18 v18 h-18z" fill="#FFF9EF" opacity=".92"/>
-          <text x="32" y="43" font-size="10" text-anchor="middle" fill="#5A3A0A" font-weight="bold" font-family="sans-serif">MIEL</text>
-        </svg>
+        <svg class="pot-icone" viewBox="0 0 72 72" aria-hidden="true"><ellipse cx="36" cy="64" rx="20" ry="3" fill="#5A3A0A" opacity=".15"/>  <g transform="rotate(18 50 30)">    <rect x="48.6" y="4" width="2.8" height="22" rx="1.4" fill="#B8823C"/>    <circle cx="50" cy="4.5" r="2.2" fill="#B8823C"/>    <g fill="#9C6A28">      <ellipse cx="50" cy="29" rx="5.4" ry="6.4"/>    </g>    <g stroke="#7A5216" stroke-width="1" opacity=".65">      <path d="M44.8 26.5 h10.4"/><path d="M44.6 29 h10.8"/><path d="M45.4 31.5 h9.2"/>    </g>    <path d="M50 35 c1.6 3 1.6 5.4 0 6.6 -1.6-1.2-1.6-3.6 0-6.6z" fill="#F4A423"/>  </g>  <path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z" fill="url(#bhMiel)"/>  <g clip-path="url(#bhClipPot)">    <rect x="13" y="22" width="48" height="44" fill="url(#bhVerre)"/>    <ellipse cx="36" cy="30" rx="20" ry="4.2" fill="#FFCF6B" opacity=".5"/>    <ellipse cx="46" cy="60" rx="18" ry="9" fill="#8A4E00" opacity=".14"/>  </g>  <path d="M15 34 C15 27 22 24 36 24 C50 24 57 27 57 34 v18 c0 7-6 11-14 11 H29 c-8 0-14-4-14-11 z" fill="none" stroke="#A85F04" stroke-opacity=".35" stroke-width="1.2"/>  <rect x="21" y="41" width="30" height="14" rx="2.6" fill="#FFF9EF" stroke="#E0C69A" stroke-width=".9"/>  <text x="36" y="50.2" font-family="Segoe UI,Arial,sans-serif" font-size="7.2" font-weight="800" fill="#5A3A0A" text-anchor="middle" letter-spacing=".6">MIEL</text>  <ellipse cx="36" cy="24" rx="21" ry="4.6" fill="#E8A825"/>  <rect x="15" y="16" width="42" height="8.5" rx="4" fill="#F0B62F"/>  <rect x="15" y="16" width="42" height="3" rx="1.5" fill="#FFDD8E" opacity=".7"/>  <g stroke="#B8823C" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round">    <path d="M22 19 v3"/><path d="M29 19 v3"/><path d="M36 19 v3"/><path d="M43 19 v3"/><path d="M50 19 v3"/>  </g></svg>
         <div class="nom-miel">${esc(m.nom)}</div>
         <div class="contenance-miel">${esc(m.contenance || '')}</div>
         <div class="desc-miel">${esc(m.description || '')}</div>
