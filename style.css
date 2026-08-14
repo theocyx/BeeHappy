@@ -60,6 +60,20 @@ a { color: var(--ambre); }
 .entete-contact { margin-left: auto; text-align: right; font-size: .88rem; font-weight: 600; }
 .entete-contact a { color: var(--brun-fonce); text-decoration: none; }
 
+/* Bouton d'acces a l'espace de gestion */
+.btn-gestion {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(58, 36, 5, .12);
+  border: 1.5px solid rgba(58, 36, 5, .3);
+  color: var(--brun-fonce); text-decoration: none;
+  padding: 8px 15px; border-radius: 10px;
+  font-size: .88rem; font-weight: 700; white-space: nowrap;
+  transition: background .15s ease, border-color .15s ease, transform .1s ease;
+}
+.btn-gestion:hover { background: var(--brun-fonce); border-color: var(--brun-fonce); color: var(--miel-clair); }
+.btn-gestion:active { transform: translateY(1px); }
+.btn-gestion svg { flex-shrink: 0; }
+
 /* ---------- Contenu ---------- */
 .page { max-width: 1100px; margin: 0 auto; padding: 26px 20px 80px; }
 
@@ -251,7 +265,8 @@ h2.titre-section::before {
 @media (max-width: 620px) {
   .entete-interieur { padding: 14px 16px; }
   .titre-site { font-size: 1.3rem; }
-  .entete-contact { margin-left: 0; text-align: left; width: 100%; }
+  .entete-contact { margin-left: 0; text-align: left; }
+  .btn-gestion { margin-left: auto; padding: 7px 13px; font-size: .84rem; }
   .deux-colonnes { grid-template-columns: 1fr; }
   .page { padding: 20px 14px 90px; }
   .bouton-panier { left: 14px; right: 14px; justify-content: center; }
