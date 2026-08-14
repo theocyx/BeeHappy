@@ -12,7 +12,7 @@ const CONFIG = {
 
   // --- 2. Coordonnees affichees sur le site ----------------
   NOM_COMMERCE: "BeeHappy",
-  SOUS_TITRE: "Miel de Heilligenberg — Alsace",
+  SOUS_TITRE: "Miel de Heiligenberg — Alsace",
   PRODUCTEUR: "C. Godmet",
   TELEPHONE: "06.81.38.03.15",
   EMAIL: "cgodmet@yahoo.fr",                       // laisse vide si tu n'en veux pas
@@ -21,9 +21,9 @@ const CONFIG = {
   // --- 3. Options de livraison -----------------------------
   FRAIS_LIVRAISON_LOCALE: 0,       // en euros, 0 = gratuit
   FRAIS_ENVOI_POSTAL: 5.00,        // en euros
-  ZONE_LIVRAISON: "Heilligenberg et communes alentour (environ 15 km)",
+  ZONE_LIVRAISON: "Strasbourg et communes de l'agglomération",
 
   // --- 4. Textes libres ------------------------------------
-  MESSAGE_ACCUEIL: "Miel récolté et mis en pot à la main, dans notre rucher en Alsace.",
+  MESSAGE_ACCUEIL: "Miel récolté et mis en pot à la main, dans notre rucher familial de Heiligenberg, en Alsace.",
   MESSAGE_PAIEMENT: "Le paiement se fait au moment de la remise du miel, en espèces ou par chèque. Aucun paiement en ligne n'est proposé actuellement."
 };
