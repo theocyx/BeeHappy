@@ -680,7 +680,11 @@ function afficherMiels() {
                 ${f.disponible ? 'Visible' : 'Masqué'}
               </button>
             </td>
-            <td style="text-align:right">
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn btn-secondaire btn-petit"
+                      onclick="venduEnDirect('${f.id}')"
+                      ${f.stock <= 0 ? 'disabled' : ''}
+                      title="Retirer des pots vendus de la main à la main">− vendu</button>
               <button class="btn btn-danger btn-petit" onclick="supprimerFormat('${f.id}','${esc(f.contenance)}')">🗑</button>
             </td>
           </tr>`).join('')
@@ -765,6 +769,44 @@ async function majFormat(formatId, champ, valeur) {
   }
   afficherMiels();
   afficherStats();
+}
+
+/* Retire des pots vendus de la main a la main, sans creer de commande */
+async function venduEnDirect(formatId) {
+  let miel = null, f = null;
+  for (const m of MIELS) {
+    const t = m.formats.find(x => x.id === formatId);
+    if (t) { miel = m; f = t; break; }
+  }
+  if (!f) return;
+
+  const saisie = prompt(
+    `${miel.nom} — ${f.contenance}\n` +
+    `Il reste ${f.stock} pot${f.stock > 1 ? 's' : ''} en stock.\n\n` +
+    `Combien en avez-vous vendu de la main à la main ?`, '1');
+
+  if (saisie === null) return;
+  const n = parseInt(saisie, 10);
+
+  if (!n || n < 1) { alert('Indiquez un nombre de pots valide.'); return; }
+  if (n > f.stock) {
+    alert(`Vous ne pouvez pas retirer ${n} pots : il n'en reste que ${f.stock}.\n\n` +
+          `Si le stock affiché est faux, corrigez-le directement dans la case.`);
+    return;
+  }
+
+  const reste = f.stock - n;
+  const { error } = await db.from('formats').update({ stock: reste }).eq('id', formatId);
+  if (error) { alert('Erreur : ' + error.message); return; }
+
+  f.stock = reste;
+  afficherMiels();
+  afficherStats();
+
+  if (reste === 0) {
+    alert(`${miel.nom} ${f.contenance} : stock épuisé.\n\n` +
+          `Le format s'affiche désormais « épuisé » sur le site, mais reste visible.`);
+  }
 }
 
 async function supprimerFormat(formatId, contenance) {

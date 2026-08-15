@@ -190,6 +190,7 @@
   <p id="lieuPied">Heiligenberg (67090), Alsace</p>
   <p style="margin-top:6px">Tél. <a id="telPied" href="#">06.81.38.03.15</a></p>
   <p style="margin-top:14px;opacity:.65;font-size:.82rem">Vente occasionnelle de miel de production familiale.<br>Aucun paiement en ligne — règlement à la remise des pots.</p>
+  <p style="margin-top:12px"><a href="mentions.html" style="font-size:.82rem;opacity:.8">Mentions légales et confidentialité</a></p>
 </footer>
 
 <!-- Fiche producteur pour les moteurs de recherche -->
@@ -349,6 +350,66 @@ function trouverFormat(formatId) {
     if (f) return { format: f, miel: m };
   }
   return null;
+}
+
+/* ============================================================
+   MEMOIRE DU PANIER
+   La selection survit a la fermeture de l'onglet. Elle est
+   gardee sur l'appareil du visiteur, jamais envoyee ailleurs,
+   et oubliee au bout de 7 jours.
+   ============================================================ */
+const CLE_PANIER = 'beehappy.panier';
+const DUREE_PANIER = 7 * 24 * 60 * 60 * 1000;
+
+function enregistrerPanier() {
+  try {
+    if (!Object.keys(PANIER).length) {
+      localStorage.removeItem(CLE_PANIER);
+      return;
+    }
+    localStorage.setItem(CLE_PANIER, JSON.stringify({ le: Date.now(), panier: PANIER }));
+  } catch (e) { /* navigation privee ou stockage plein : sans consequence */ }
+}
+
+function relirePanier() {
+  try {
+    const brut = localStorage.getItem(CLE_PANIER);
+    if (!brut) return {};
+    const d = JSON.parse(brut);
+    if (!d || !d.panier || (Date.now() - (d.le || 0)) > DUREE_PANIER) {
+      localStorage.removeItem(CLE_PANIER);
+      return {};
+    }
+    return d.panier;
+  } catch (e) { return {}; }
+}
+
+/* Ecarte ce qui n'existe plus ou n'est plus en stock, et
+   previent la personne plutot que de modifier en silence. */
+function nettoyerPanier() {
+  const retires = [];
+  let ajuste = false;
+
+  for (const [id, q] of Object.entries({ ...PANIER })) {
+    const t = trouverFormat(id);
+    if (!t) {                       // format supprime ou masque depuis
+      delete PANIER[id];
+      ajuste = true;
+      continue;
+    }
+    if (t.format.stock <= 0) {
+      retires.push(`${t.miel.nom} ${t.format.contenance}`);
+      delete PANIER[id];
+      ajuste = true;
+    } else if (q > t.format.stock) {
+      retires.push(`${t.miel.nom} ${t.format.contenance} (réduit à ${t.format.stock})`);
+      PANIER[id] = t.format.stock;
+      ajuste = true;
+    }
+  }
+
+  if (ajuste) enregistrerPanier();
+  return retires;
 }
 
 /* ---------- Petits utilitaires ---------- */
@@ -619,7 +680,22 @@ async function chargerMiels() {
     CHOISI[m.id] = dispo.id;
   });
 
+  // le panier retrouve d'une visite precedente est confronte au stock reel
+  const retires = nettoyerPanier();
+  if (retires.length) {
+    zone.insertAdjacentHTML('beforebegin', `
+      <div class="alerte alerte-info" id="alertePanier" style="margin-bottom:16px">
+        <strong>Votre réservation a changé depuis votre dernière visite :</strong>
+        ${esc(retires.join(', '))}.
+      </div>`);
+    setTimeout(() => {
+      const a = document.getElementById('alertePanier');
+      if (a) a.remove();
+    }, 12000);
+  }
+
   afficherMiels();
+  majBoutonPanier();
 }
 
 function afficherMiels() {
@@ -696,6 +772,7 @@ function modifierQte(formatId, delta) {
   if (!trouve) return;
   const nouvelle = Math.max(0, Math.min(trouve.format.stock, (PANIER[formatId] || 0) + delta));
   if (nouvelle === 0) delete PANIER[formatId]; else PANIER[formatId] = nouvelle;
+  enregistrerPanier();
   afficherMiels();
   majBoutonPanier();
 }
@@ -852,6 +929,11 @@ function afficherFormulaire(erreur) {
         ${esc(CONFIG.MESSAGE_PAIEMENT)}
       </div>
 
+      <p style="font-size:.8rem;color:var(--gris);text-align:center;margin-bottom:14px">
+        Vos coordonnées servent uniquement à vous recontacter pour cette réservation
+        — <a href="mentions.html" target="_blank">en savoir plus</a>.
+      </p>
+
       <button type="submit" class="btn btn-principal btn-large" id="btnEnvoyer"
         ${totalArticles() === 0 ? 'disabled' : ''}>
         Envoyer ma réservation
@@ -865,6 +947,7 @@ function afficherFormulaire(erreur) {
 
 function retirerDuPanier(formatId) {
   delete PANIER[formatId];
+  enregistrerPanier();
   afficherMiels();
   majBoutonPanier();
   if (totalArticles() === 0) { fermerPanier(); return; }
@@ -975,6 +1058,7 @@ async function envoyerCommande(e) {
   const numero = Array.isArray(data) && data[0] ? data[0].num_commande : '—';
   afficherConfirmation(numero, mode, paie);
   PANIER = {};
+  enregistrerPanier();
   majBoutonPanier();
   chargerMiels();
 }
@@ -1010,6 +1094,7 @@ function afficherConfirmation(numero, mode, paie) {
 
 /* ---------- Démarrage ---------- */
 appliquerConfig();
+PANIER = relirePanier();
 chargerMiels();
 </script>
 </body>
