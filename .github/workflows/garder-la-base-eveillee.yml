@@ -1,0 +1,43 @@
+name: Garder la base éveillée
+
+on:
+  schedule:
+    - cron: '5 9 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  reveiller:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Interroger la base
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          CLE: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$CLE" ]; then
+            echo "::error::Les secrets SUPABASE_URL et SUPABASE_ANON_KEY ne sont pas renseignés."
+            exit 1
+          fi
+
+          CODE=$(curl -s -o /tmp/reponse.txt -w "%{http_code}" \
+            "${URL}/rest/v1/miels?select=id&limit=1" \
+            -H "apikey: ${CLE}" \
+            -H "Authorization: Bearer ${CLE}")
+
+          echo "Code HTTP : $CODE"
+          echo "Réponse   : $(head -c 200 /tmp/reponse.txt)"
+
+          if [ "$CODE" = "200" ]; then
+            echo "✅ Base réveillée, tout va bien."
+          elif [ "$CODE" = "401" ] || [ "$CODE" = "403" ]; then
+            echo "::error::Clé refusée. Vérifie le secret SUPABASE_ANON_KEY."
+            exit 1
+          elif [ "$CODE" = "000" ] || [ "$CODE" = "503" ] || [ "$CODE" = "540" ]; then
+            echo "::error::Le projet semble déjà en pause. Relance-le sur supabase.com (bouton Restore)."
+            exit 1
+          else
+            echo "::error::Réponse inattendue ($CODE)."
+            exit 1
+          fi
